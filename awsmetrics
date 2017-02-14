@@ -20,7 +20,7 @@ ${ORANGE}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicitly, for example: ${ORANGE}awsmetrics -a *instancename*${NC}
+      implicintly, for example: ${ORANGE}awsmetrics -a *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
@@ -154,6 +154,7 @@ function select_ssh () {
 
   while create_menu "${s}" && read -rp "$prompt" num && [[ "$num" ]]; do
     [ "$num" -ne 0 ] || exit 1;
+    num=$((num-1)) # subtract number, because element in array starts at 0
     printf "You selected ${GREEN}${ip_array[num]}${NC}\n";
     ssh -A "${ip_array[num]}"
     break;
@@ -267,7 +268,7 @@ fi
 
 # SSH mode
 if [ "${s}" ]; then
-  ip_array=( $(get_instance_info "${s}" "text" "${t}" | awk '{print $2}') )
-  name_array=( $(get_instance_info "${s}" "text" "${t}" | awk '{print $5}') )
+  ip_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $2}') )
+  name_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $5}') )
   select_ssh "${s}" "${t}"
 fi
