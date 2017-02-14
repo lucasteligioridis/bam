@@ -20,7 +20,7 @@ ${ORANGE}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicintly, for example: ${ORANGE}awsmetrics -a *instancename*${NC}
+      implicitly, for example: ${ORANGE}awsmetrics -a *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
