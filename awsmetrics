@@ -241,6 +241,22 @@ function select_ssh_scp () {
   fi
 }
 
+function empty_args () {
+    local ARG=$1
+    local OPT=$2
+
+    [[ -z "${ARG}" || "${ARG}" =~ ^[[:space:]]*$ || "${ARG}" == -* ]] \
+    && { empty_message "${OPT}" >&2; exit 1; }
+}
+
+function empty_message () {
+  echo -e "Option ${BOLD}-${1:-$OPTARG}${NC} requires an argument, try 'awsmetrics --help' for more information"
+}
+
+function opts_message () {
+  echo -e "Option ${BOLD}-${OPTARG}${NC} does not exist, try 'awsmetrics --help' for more information"
+}
+
 # Setting long opts to short opts
 for arg in "$@"; do
   shift
@@ -263,51 +279,39 @@ done
 o="json"
 t="*"
 OPTIND=1
+I=""
 
 # Short opts
-while getopts ":a:A:b:i:t:I:d:s:S:o:h" opts; do
+optspec=":a:A:b:i:t:I:d:s:S:o:h"
+while getopts "${optspec}" opts; do
   case "${opts}" in
     a)
       a="${OPTARG}"
-      if [ -z "${a}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     A)
       A="${OPTARG}"
-      if [ -z "${A}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     i)
       i="${OPTARG}"
-      if [ -z "${i}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     I)
       I="${OPTARG}"
-      if [ -z "${I}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     b)
       b="${OPTARG}"
-      if [ -z "${b}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     s)
       s="${OPTARG}"
-      if [ -z "${s}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     S)
       S+=("${OPTARG}")
-      if [ -z "${S}" ]; then
-        echo -e "${aws_usage}"
-      fi
+      empty_args "${OPTARG}" "${opts}"
       ;;
     o) 
       o="${OPTARG}"
@@ -318,8 +322,12 @@ while getopts ":a:A:b:i:t:I:d:s:S:o:h" opts; do
     h)
       echo -e "${aws_usage}"
       ;;
+    :)
+      empty_message
+      exit 2
+      ;;
     *)
-      echo -e "Option does not exist or no arguments specified, try 'awsmetrics --help' for more information"
+      opts_message
       exit 1
   esac
 done
