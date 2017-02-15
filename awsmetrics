@@ -1,17 +1,18 @@
 #!/bin/bash
 
 # Global vars
-RED='\033[0;31m'
-ORANGE='\033[0;33m'
-GREEN='\033[0;32m'
+REDB='\033[1;31m'
+REDBU='\033[1;4;31m'
+GREEN='\033[1;32m'
 NC='\033[0m'
+BOLD='\033[1m'
 
 # Help message
 aws_usage="
-${ORANGE}NAME${NC}
-      awsmetrics - DEATH TO THE AWS CONSOLE!!!
+${REDBU}NAME${NC}
+      ${BOLD}awsmetrics${NC} - DEATH TO THE AWS CONSOLE!!!
 
-${ORANGE}SYNOPSIS${NC}
+${REDBU}SYNOPSIS${NC}
         awsmetrics [options...] <parameters>
 
       Use the awsmetrics command so you dont have to remember all the stupid aws 
@@ -20,17 +21,17 @@ ${ORANGE}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicintly, for example: ${ORANGE}awsmetrics -a *instancename*${NC}
+      implicintly, for example: ${REDB}awsmetrics -a *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
 
-${ORANGE}OPTIONS${NC}
-      ${ORANGE}-i, --instance-ip${NC} <instance-name>
+${REDBU}OPTIONS${NC}
+      ${REDB}-i, --instance-ip${NC} <instance-name>
           Show the ip addresses of the instance you search for. The private ip
           will be shown by default.
 
-      ${ORANGE}-I, --instance-info${NC} <instance-name>
+      ${REDB}-I, --instance-info${NC} <instance-name>
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
@@ -38,15 +39,15 @@ ${ORANGE}OPTIONS${NC}
             o InstanceId
             o Name 
 
-      ${ORANGE}-t, --instance-type${NC} <instance-type>
+      ${REDB}-t, --instance-type${NC} <instance-type>
           Optionally provide an instance type to narrow down searches further.
           By default if this option isn't selected it will just search all
           instance types.
 
-      ${ORANGE}-a, --asg-count${NC} <asg-name>
+      ${REDB}-a, --asg-count${NC} <asg-name>
           Get the current instance count of an auto-scaling group.
 
-      ${ORANGE}-A, --asg-info${NC} <asg-name>
+      ${REDB}-A, --asg-info${NC} <asg-name>
           Provide the following information of an auto-scaling group:
 
             o AvailabilityZone
@@ -54,29 +55,29 @@ ${ORANGE}OPTIONS${NC}
             o InstanceId
             o State
 
-      ${ORANGE}-b, --s3-size${NC} <bucket-name>
+      ${REDB}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${ORANGE}-s, --ssh${NC} <instance-name>
+      ${REDB}-s, --ssh${NC} <instance-name>
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
 
-      ${ORANGE}-S, --scp${NC} <instance-name> -S <source> [-S <target>]
+      ${REDB}-S, --scp${NC} <instance-name> -S <source> [-S <target>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to SCP files across to, please note you still need correct permissions
           and SSH keys to authorise correctly. Target will default to your home
           directory on the remote server, so only specify for other directories.
 
-      ${ORANGE}-o, --output${NC} <style>
+      ${REDB}-o, --output${NC} <style>
           Formatting style for output:
 
             o json (default)
             o text
             o table
 
-      ${ORANGE}-h, --help${NC}
+      ${REDB}-h, --help${NC}
           Display help, duh....can't believe this is even required."
 
 # aws functions - the titles speak for themselves
