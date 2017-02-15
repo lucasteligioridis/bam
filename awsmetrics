@@ -166,37 +166,46 @@ function element_length () {
 # create menu with options to select from
 function create_menu () {
   if [ ${#name_array} -eq 0 ]; then
-    echo -e "${RED}No servers found, exiting...better luck next time...${NC}"
+    echo -e "${REDB}No servers found, exiting...better luck next time...${NC}"
     exit 1;
   else
-    echo -e "Instances found:\n"
-
+    # add total lengths of name tag and ip addresses.
     total_len=$((${name_len} + ${ip_len} + 11))
 
-    # Create menu in a nicely formatted structure
-    printf "|"
-    for ((i=0; i<=${total_len}; i++)); do
-      printf "-"
-    done
-    printf "|"
-    printf "\n"
-    printf "|%6s| %-$((${name_len}))s | %-$((${ip_len}))s |\n" "No." "Servers" "IP Address"
-    printf "|"
-    for ((i=0; i<=${total_len}; i++)); do
-      printf "-"
-    done
-    printf "|"
-    printf "\n"
+    pretty_table
+
+    # titles
+    printf "|${BOLD}%6s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
+
+    pretty_table
+
+    # print out instance information
     for ((i=1; i<=${#name_array[@]}; i++)); do
-        printf "|%6s| %-${name_len}s | %-${ip_len}s |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
+        printf "|${BOLD}%6s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
     done
-    fi
-      printf "|"
-    for ((i=0; i<=${total_len}; i++)); do
-    printf "-"
+
+    pretty_table
+
+    printf "\n"
+  fi
+}
+
+function pretty_table () {
+    printf "+"
+    for ((i=1; i<=6; i++)); do
+      printf "-"
     done
-    printf "|"
-    printf "\n\n"
+    printf "+"
+
+    for ((i=1; i<=$((${name_len}+2)); i++)); do
+      printf "-"
+    done
+    printf "+"
+
+    for ((i=1; i<=$((${ip_len}+2)); i++)); do
+      printf "-"
+    done
+    printf "+\n"
 }
 
 # ssh or scp over to selected servers
@@ -204,29 +213,30 @@ function select_ssh_scp () {
   create_menu
 
   while true; do
-    prompt="Enter the No. of the instance you would like to SSH/SCP to or type 0 or <CTRL+C> to quit: "
+    prompt="Enter the No. of the instance you would like to SSH/SCP or type 0 or <CTRL+C> to quit: "
     read -rp "${prompt}" num
     case "${num}" in
       "" | *[!.0-9]* ) # need to figure out a way to put integer range from 1 - ${#name_array}
-        echo -e "${RED}Please only select from available options!${NC}"
+        echo -e "${REDB}Please only select from available options!${NC}"
         ;;
       0)
         echo 'Exiting...'
-        exit 0;
+        exit 0
         ;;
       *)
-        break ;;
+        clear
+        break
+        ;;
     esac
   done
 
   num=$((num-1)) # subtract number, because element in array starts at 0
-  printf "You selected ${GREEN}${ip_array[num]}${NC}\n";
+  printf "Connecting to...${GREEN}${ip_array[num]}${NC}\n\n"
 
   # SSH or SCP mode depending on flag enabled
   if [ "${s}" ]; then
     ssh -A "${ip_array[num]}"
   elif [ "${S}" ]; then
-    echo "${ip_array[num]}:${4}"
     scp "${3}" "${ip_array[num]}":"${4:-}"
   fi
 }
