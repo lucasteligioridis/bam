@@ -54,8 +54,20 @@ ${ORANGE}OPTIONS${NC}
             o InstanceId
             o State
 
+      ${ORANGE}-b, --s3-size${NC} <bucket-name>
+          Retrieve the bucket size of specified bucket name.
+
       ${ORANGE}-s, --ssh${NC} <instance-name>
-          Provide a select option of instances that can be ssh'd to.
+          Provide a list of options that are returned from the instance name
+          searched. You then select the number of the instance you would like to
+          SSH to.
+
+      ${ORANGE}-S, --scp${NC} <instance-name> -S <source> [-S <target>]
+          Provide a list of options that are returned from the instance name
+          searched. You then select the number of the instance you would like to
+          to SCP files across to, please note you still need correct permissions
+          and SSH keys to authorise correctly. Target will default to your home
+          directory on the remote server, so only specify for other directories.
 
       ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
@@ -173,6 +185,7 @@ for arg in "$@"; do
     "--asg-info")       set -- "$@" "-A" ;;
     "--s3-size")        set -- "$@" "-b" ;;
     "--ssh")            set -- "$@" "-s" ;;
+    "--scp")            set -- "$@" "-S" ;;
     "--output")         set -- "$@" "-o" ;;
     *)                  set -- "$@" "$arg"
   esac
