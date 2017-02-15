@@ -349,5 +349,16 @@ fi
 if [ "${s}" ]; then
   ip_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $2}') )
   name_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $5}') )
-  select_ssh "${s}" "${t}"
+  ip_len=$(element_length ${ip_array[@]})
+  name_len=$(element_length ${name_array[@]})
+  select_ssh_scp "${s}" "${t}"
+fi
+
+# SCP mode
+if [ "${S}" ]; then
+  ip_array=( $(get_instance_info "${S[0]}" "text" "${t}" | sort -n | awk '{print $2}') )
+  name_array=( $(get_instance_info "${S[0]}" "text" "${t}" | sort -n | awk '{print $5}') )
+  ip_len=$(element_length ${ip_array[@]})
+  name_len=$(element_length ${name_array[@]})
+  select_ssh_scp "${S[0]}" "${t}" "${S[1]}" "${S[2]}"
 fi
