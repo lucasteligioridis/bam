@@ -255,7 +255,7 @@ for arg in "$@"; do
     "--ssh")            set -- "$@" "-s" ;;
     "--scp")            set -- "$@" "-S" ;;
     "--output")         set -- "$@" "-o" ;;
-    *)                  set -- "$@" "$arg"
+    *)                  set -- "$@" "${arg}"
   esac
 done
 
