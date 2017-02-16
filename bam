@@ -352,6 +352,7 @@ fi
 
 # SSH mode
 if [ "${s}" ]; then
+  SSHSCP="SSH"
   ip_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $2}') )
   name_array=( $(get_instance_info "${s}" "text" "${t}" | sort -n | awk '{print $5}') )
   ip_len=$(element_length ${ip_array[@]})
@@ -360,10 +361,13 @@ if [ "${s}" ]; then
 fi
 
 # SCP mode
-if [ "${S}" ]; then
+if [[ "${#S[@]}" -ge 2 && "${#S[@]}" -le 3 ]]; then
+  SSHSCP="SCP"
   ip_array=( $(get_instance_info "${S[0]}" "text" "${t}" | sort -n | awk '{print $2}') )
   name_array=( $(get_instance_info "${S[0]}" "text" "${t}" | sort -n | awk '{print $5}') )
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
   select_ssh_scp "${S[0]}" "${t}" "${S[1]}" "${S[2]}"
+elif [[ "${#S[@]}" -lt 2 && "${#S[@]}" -ge 1 ]]; then
+  echo "Must specify hostname search and provide <source> to SCP, try 'bam --help' for more information"
 fi
