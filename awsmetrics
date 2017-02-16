@@ -10,18 +10,18 @@ BOLD='\033[1m'
 # Help message
 aws_usage="
 ${REDBU}NAME${NC}
-      ${BOLD}awsmetrics${NC} - DEATH TO THE AWS CONSOLE!!!
+      ${BOLD}bam${NC} - DEATH TO THE AWS CONSOLE!!!
 
 ${REDBU}SYNOPSIS${NC}
-        awsmetrics [options...] <parameters>
+        bam [options...] <parameters>
 
-      Use the awsmetrics command so you dont have to remember all the stupid aws 
+      Use the bam command so you dont have to remember all the stupid aws 
       cli parameters to get basic information about instances and go through all
       the man pages, there is so much. Hopefully this makes your life a little 
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicintly, for example: ${REDB}awsmetrics -a *instancename*${NC}
+      implicitly, for example: ${REDB}bam -a *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
@@ -250,11 +250,11 @@ function empty_args () {
 }
 
 function empty_message () {
-  echo -e "Option ${BOLD}-${1:-$OPTARG}${NC} requires an argument, try 'awsmetrics --help' for more information"
+  echo -e "Option ${BOLD}-${1:-$OPTARG}${NC} requires an argument, try 'bam --help' for more information"
 }
 
 function opts_message () {
-  echo -e "Option ${BOLD}-${OPTARG}${NC} does not exist, try 'awsmetrics --help' for more information"
+  echo -e "Option ${BOLD}-${OPTARG}${NC} does not exist, try 'bam --help' for more information"
 }
 
 # Setting long opts to short opts
@@ -336,7 +336,7 @@ shift $(expr "${OPTIND}" - 1)
 
 # Check script for args and exit if null
 if [ "${OPTIND}" -eq 1 ]; then
-  echo "awsmetrics: try 'awsmetrics --help' for more information"
+  echo "bam: try 'bam --help' for more information"
   exit 1
 fi
 
