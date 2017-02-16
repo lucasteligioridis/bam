@@ -92,8 +92,8 @@ function get_instance_info () {
   --filters "Name=tag:Name,Values=*${1}*" "Name=instance-state-code,Values=16" \
   "Name=instance-type,Values=${3}" \
   --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] \
-  | [0].Value, InstanceId: InstanceId, IP: PrivateIpAddress, \
-  InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
+  | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
+  PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
   --output ${2}
 }
 
