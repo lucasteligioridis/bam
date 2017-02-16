@@ -321,6 +321,7 @@ while getopts "${optspec}" opts; do
       ;;
     h)
       echo -e "${aws_usage}"
+      exit 1
       ;;
     :)
       empty_message
