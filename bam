@@ -198,7 +198,7 @@ function select_ssh_scp () {
         echo -e "${REDB}Please only select from available options!${NC}"
         ;;
       0)
-        echo 'Exiting...'
+        echo -e "Exiting..."
         exit 0
         ;;
       *)
@@ -219,6 +219,7 @@ function select_ssh_scp () {
   fi
 }
 
+# checks for empty arguments
 function empty_args () {
     local ARG=$1
     local OPT=$2
@@ -231,14 +232,20 @@ function empty_message () {
   echo -e "Option ${BOLD}-${1:-$OPTARG}${NC} requires an argument, try 'bam --help' for more information"
 }
 
+function multi_arg_error () {
+  echo -e "Invalid option combination, try 'bam --help' for more information"
+  exit 1
+}
+
 function opts_message () {
   echo -e "Option ${BOLD}-${OPTARG}${NC} does not exist, try 'bam --help' for more information"
+  exit 1
 }
 
 # Setting long opts to short opts
 for arg in "$@"; do
   shift
-  case "$arg" in
+  case "${arg}" in
     "--help")           set -- "$@" "-h" ;;
     "--instance-ip")    set -- "$@" "-i" ;;
     "--instance-info")  set -- "$@" "-I" ;;
@@ -257,7 +264,6 @@ done
 o="json"
 t="*"
 OPTIND=1
-I=""
 
 # Short opts
 optspec=":a:A:b:i:t:I:d:s:S:o:h"
@@ -284,10 +290,12 @@ while getopts "${optspec}" opts; do
       empty_args "${OPTARG}" "${opts}"
       ;;
     s)
+      [ "${S}" ] && multi_arg_error
       s="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
       ;;
     S)
+      [ "${s}" ] && multi_arg_error
       S+=("${OPTARG}")
       empty_args "${OPTARG}" "${opts}"
       ;;
@@ -307,7 +315,6 @@ while getopts "${optspec}" opts; do
       ;;
     *)
       opts_message
-      exit 1
   esac
 done
 shift $(expr "${OPTIND}" - 1)
