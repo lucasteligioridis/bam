@@ -3,7 +3,7 @@
 # Global vars
 REDB='\033[1;31m'
 REDBU='\033[1;4;31m'
-GREEN='\033[1;32m'
+GREEN='\033[1;36m'
 NC='\033[0m'
 BOLD='\033[1m'
 
@@ -81,35 +81,6 @@ ${REDBU}OPTIONS${NC}
           Display help, duh....can't believe this is even required."
 
 # aws functions - the titles speak for themselves
-function get_asg_exists () {
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName}' --output text | \
-  { grep $1 || true; } | wc -l
-}
-
-function get_asg_instance_count () {
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName,DES:DesiredCapacity,LC:LaunchConfigurationName}' \
-  --output text | { grep $1 || true; } | { grep $2 || true; } | awk '{print $4}'
-}
-
-function get_asg_lc_name () {
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName,LC:LaunchConfigurationName}' \
-  --output text | { grep -i $1 || true; } | awk '{print $4}'
-}
-
-function get_asg_image_id () {
-  aws autoscaling describe-launch-configurations --launch-configuration-names $1 \
-  --query 'LaunchConfigurations[]. ImageId' --output text
-}
-
-function get_elb_health () {
-  aws elb describe-instance-health --load-balancer-name $1 \
-  --query 'InstanceStates[].[State]' --output text | \
-  { grep -i 'OutOfService' || true; } | wc -l
-}
-
 function get_instance_ips () {
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${1}*" "Name=instance-state-code,Values=16" \
