@@ -56,46 +56,59 @@ ${REDU}OPTIONS${NC}
             o InstanceId
             o State
 
-      ${REDB}-b, --s3-size${NC} <bucket-name>
+      ${RED}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${REDB}-s, --ssh${NC} <instance-name>
+      ${RED}-s, --ssh${NC} <instance-name> [-u <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
 
-      ${REDB}-S, --scp${NC} <instance-name> -S <source> [-S <target>]
+          Can also append the -u flag if a username other than default is wanted
+          or required.
+
+      ${RED}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to SCP files across to, please note you still need correct permissions
           and SSH keys to authorise correctly. Target will default to your home
           directory on the remote server, so only specify for other directories.
 
-      ${REDB}-o, --output${NC} <style>
+          Can also append the -m flag if wanting to download from remote server
+          locally. Without flag appended it will default to uploading a file.
+
+      ${RED}-o, --output${NC} <style>
           Formatting style for output:
 
             o json (default)
             o text
             o table
 
-      ${REDB}-h, --help${NC}
+      ${RED}-h, --help${NC}
           Display help, duh....can't believe this is even required."
 
 # aws functions - the titles speak for themselves
 function get_instance_ips () {
+  local instance_name=$1
+  local format=$2
+
   aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${1}*" "Name=instance-state-code,Values=16" \
-  --query 'Reservations[].Instances[].[ PrivateIpAddress ]' --output ${2}
+  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
+  --query 'Reservations[].Instances[].[ PrivateIpAddress ]' --output ${format}
 }
 
 function get_instance_info () {
+  local instance_name=$1
+  local instance_type=$3
+  local format=$2
+
   aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${1}*" "Name=instance-state-code,Values=16" \
-  "Name=instance-type,Values=${3}" \
+  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
+  "Name=instance-type,Values=${instance_type}" \
   --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] \
   | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
-  --output ${2}
+  --output ${format}
 }
 
 function get_asg_name () {
@@ -112,12 +125,15 @@ function get_asg_info () {
 }
 
 function get_bucket_size () {
+  local bucket_name=$1
+  local format=$2
+
   now=$(date +%s)
   aws cloudwatch get-metric-statistics --namespace "AWS/S3" \
   --start-time "$(echo "${now} - 86400" | bc)" --end-time "${now}" \
   --metric-name BucketSizeBytes --period 86400 --statistics Sum --unit Bytes \
-  --dimensions Name=BucketName,Value=${1} Name=StorageType,Value=StandardStorage \
-  --output ${2}
+  --dimensions Name=BucketName,Value=${bucket_name} Name=StorageType,Value=StandardStorage \
+  --output ${format}
 }
 
 # get the longest string in array and print out length.
@@ -138,23 +154,22 @@ function element_length () {
 # create menu with options to select from
 function create_menu () {
   if [ ${#name_array} -eq 0 ]; then
-    echo -e "${REDB}No servers found, exiting...better luck next time...${NC}"
-    exit 1;
+    nothing_returned_message
   else
     # add total lengths of name tag and ip addresses.
     pretty_title
-    pretty_table
+    pretty_line
 
     # titles
     printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
-    pretty_table
+    pretty_line
 
     # print out instance information
     for ((i=1; i<=${#name_array[@]}; i++)); do
         printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
     done
 
-    pretty_table
+    pretty_line
     printf "\n"
   fi
 }
