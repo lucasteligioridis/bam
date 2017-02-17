@@ -16,7 +16,7 @@ Installation
 
     git clone git@github.com:lucas044/bam
     cd bam
-    cp bam /usr/local/bin
+    make install
 
 Usage
 -----
@@ -48,6 +48,10 @@ As with SSH, you can SCP in the same fashion, a table of instances will appear a
 command is run, please be sure to include your source file that you would like to SCP:
 
     bam --scp instance-name --scp /path/to/source/file.txt
+
+You can also use this function to download files remotely by appending the -m flag.
+
+    bam --scp instance-name --scp /path/to/target/file.txt --scp /local/dir/to/download/to -m
 
 **INSTANCE INFO**
 
