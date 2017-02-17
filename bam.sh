@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Global vars
-RED='\033[0;31m'
+RED='\033[1;31m'
 REDU='\033[1;4;31m'
 GREEN='\033[1;32m'
 ORANGE='\033[1;31m'
@@ -178,7 +178,7 @@ function pretty_title () {
   total_len=$((${name_len} + ${ip_len} + 9))
   half_len=$((total_len/2))
   for ((i=1; i<=$((${total_len}+5)); i++)); do printf "-"; done && printf "\n"
-  printf "| ${ORANGE}%$((${half_len}-1))s${NC} %$((${half_len}+2))s |\n" "${SSHSCP}" ""
+  printf "| ${ORANGE}%$((${half_len}-1))s${NC} %$((${half_len}+2))s|\n" "${SSHSCP}" ""
 }
 
 function pretty_line () {
@@ -214,7 +214,7 @@ function select_ssh_scp () {
   done
 
   num=$((num-1)) # subtract number, because element in array starts at 0
-  printf "Connecting to... ${GREEN}${ip_array[num]}${NC}\n\n"
+  printf "Connecting to...\nHost: ${name_array[num]}\nIP: ${ip_array[num]}\n\n"
 
   # SSH or SCP mode depending on flag enabled
   if [ "${ssh_mode}" ]; then
@@ -354,19 +354,6 @@ fi
 if [ "${i}" ]; then
   get_instance_ips "${i}" "${o}"
 fi
-
-#function check_results () { TODO
-#  array=$@
-#  echo 'did you make it here?'
-#  echo "${array[@]}"
-#  echo $@
-#  if ("${array[@]}" | wc -l); then
-#    echo 'or here?'
-#    nothing_returned_message
-#  else
-#    $*
-#  fi
-#}
 
 # Get instance info
 if [ "${instance_search}" ]; then
