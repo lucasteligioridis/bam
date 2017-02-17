@@ -177,33 +177,22 @@ function create_menu () {
 function pretty_title () {
   total_len=$((${name_len} + ${ip_len} + 9))
   half_len=$((total_len/2))
-  for ((i=1; i<=$((${total_len}+5)); i++)); do
-    printf "-"
-  done
-  printf "\n"
-  printf "| ${REDB}%$((${half_len}-1))s${NC} %$((${half_len}+1))s |\n" "${SSHSCP}" ""
+  for ((i=1; i<=$((${total_len}+5)); i++)); do printf "-"; done && printf "\n"
+  printf "| ${ORANGE}%$((${half_len}-1))s${NC} %$((${half_len}+2))s |\n" "${SSHSCP}" ""
 }
 
-function pretty_table () {
+function pretty_line () {
   printf "+"
-  for ((i=1; i<=6; i++)); do
-    printf "-"
-  done
-  printf "+"
-
-  for ((i=1; i<=$((${name_len}+2)); i++)); do
-    printf "-"
-  done
-  printf "+"
-
-  for ((i=1; i<=$((${ip_len}+2)); i++)); do
-    printf "-"
-  done
-  printf "+\n"
+  for ((i=1; i<=6; i++)); do printf "-"; done && printf "+";
+  for ((i=1; i<=$((${name_len}+2)); i++)); do printf "-"; done && printf "+"
+  for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+\n"
 }
 
 # ssh or scp over to selected servers
 function select_ssh_scp () {
+  file=$3
+  path=$4
+
   create_menu
 
   while true; do
@@ -211,7 +200,7 @@ function select_ssh_scp () {
     read -rp "${prompt}" num
     case "${num}" in
       "" | *[!.0-9]* ) # need to figure out a way to put integer range from 1 - ${#name_array}
-        echo -e "${REDB}Please only select from available options!${NC}"
+        echo -e "${RED}Please only select from available options!${NC}"
         ;;
       0)
         echo -e "Exiting..."
@@ -225,23 +214,33 @@ function select_ssh_scp () {
   done
 
   num=$((num-1)) # subtract number, because element in array starts at 0
-  printf "Connecting to...${GREEN}${ip_array[num]}${NC}\n\n"
+  printf "Connecting to... ${GREEN}${ip_array[num]}${NC}\n\n"
 
   # SSH or SCP mode depending on flag enabled
-  if [ "${s}" ]; then
-    ssh -A "${ip_array[num]}"
-  elif [ "${S}" ]; then
-    scp "${3}" "${ip_array[num]}":"${4:-}"
+  if [ "${ssh_mode}" ]; then
+    ssh -A "${user}"@"${ip_array[num]}"
+  elif [ "${ssh_mode}" ]; then
+    if [ "${scp_opt}" ]; then
+      scp "${user}"@"${ip_array[num]}":"${file}" "${path:-}"
+    else
+      scp "${file}" "${user}"@"${ip_array[num]}":"${path:-}"
+    fi
   fi
 }
 
 # checks for empty arguments
 function empty_args () {
-    local ARG=$1
-    local OPT=$2
+    local arg=$1
+    local opt=$2
 
-    [[ -z "${ARG}" || "${ARG}" =~ ^[[:space:]]*$ || "${ARG}" == -* ]] \
-    && { empty_message "${OPT}" >&2; exit 1; }
+    [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
+    && { empty_message "${opt}" >&2; exit 1; }
+}
+
+# error messages
+function nothing_returned_message () {
+  echo -e "\n${RED}Search results returned nothing (╯°□°）╯︵ ┻━┻ ${NC}"
+  exit 1
 }
 
 function empty_message () {
