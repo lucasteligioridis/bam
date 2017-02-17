@@ -95,9 +95,8 @@ function get_instance_ips () {
 
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
-  --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] \
-  | [0].Value,PrivateIP:PrivateIpAddress,PublicIP:PublicIpAddress}" \
-  --output ${format}
+  --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] | [0].Value,\
+  PrivateIP:PrivateIpAddress,PublicIP:PublicIpAddress}" --output ${format}
 }
 
 function get_instance_info () {
@@ -107,9 +106,8 @@ function get_instance_info () {
 
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
-  "Name=instance-type,Values=${instance_type}" \
-  --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] \
-  | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
+  "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
+  .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
   --output ${format}
 }
@@ -134,9 +132,8 @@ function get_asg_image_id () {
 function get_asg_name () {
   local asg_name=$1
 
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName}' \
-  --output text | grep ${1}
+  aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].\
+  {ASG:AutoScalingGroupName}' --output text | grep ${1}
 }
 
 function get_asg_info () {
