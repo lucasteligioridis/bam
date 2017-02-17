@@ -21,7 +21,7 @@ Installation
 Usage
 -----
 
-**SSH Search**
+**SSH**
 
 You have the ability to SSH to the machines on AWS, by providing a search term by instance name
 you can have a table of results that you can then SSH to:
