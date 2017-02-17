@@ -95,7 +95,9 @@ function get_instance_ips () {
 
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
-  --query 'Reservations[].Instances[].[ PrivateIpAddress ]' --output ${format}
+  --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] \
+  | [0].Value,PrivateIP:PrivateIpAddress,PublicIP:PublicIpAddress}" \
+  --output ${format}
 }
 
 function get_instance_info () {
@@ -303,7 +305,7 @@ for arg in "$@"; do
 done
 
 # Default variables
-format="json"
+format="table"
 instance_type="*"
 user="$(id -un)"
 scp_opt=""
@@ -328,7 +330,6 @@ while getopts "${optspec}" opts; do
     I)
       instance_search="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
-      too_many_params "${OPTARG}" "${opts}"
       ;;
     b)
       bucket_search="${OPTARG}"
@@ -358,7 +359,7 @@ while getopts "${optspec}" opts; do
       ;;
     h)
       echo -e "${aws_usage}"
-      exit 1
+      exit 0
       ;;
     :)
       empty_message
@@ -395,8 +396,7 @@ if [ "${ip_search}" ]; then
 fi
 
 # Get instance info
-if [ "${instance_search}" ]; then
-  echo "${instance_search}"
+if [[ "${instance_search}" ]] && [[ "${format}" ]]; then
   if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
     nothing_returned_message
   else
