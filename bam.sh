@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Global vars
-RED='\033[1;31m'
-REDU='\033[1;4;31m'
+RED='\033[0;31m'
+ORANGE='\033[1;31m'
+ORANGEU='\033[1;4;31m'
 GREEN='\033[1;32m'
 ORANGE='\033[1;31m'
 NC='\033[0m'
@@ -10,10 +11,10 @@ BOLD='\033[1m'
 
 # Help message
 aws_usage="
-${REDU}NAME${NC}
+${ORANGEU}NAME${NC}
       ${BOLD}bam${NC} - DEATH TO THE AWS CONSOLE!!!
 
-${REDU}SYNOPSIS${NC}
+${ORANGEU}SYNOPSIS${NC}
         bam [options...] <parameters>
 
       Use the bam command so you dont have to remember all the stupid aws 
@@ -22,17 +23,17 @@ ${REDU}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicitly, for example: ${RED}bam -I *instancename*${NC}
+      implicitly, for example: ${ORANGE}bam -I *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
 
-${REDU}OPTIONS${NC}
-      ${RED}-i, --instance-ip${NC} <instance-name>
+${ORANGEU}OPTIONS${NC}
+      ${ORANGE}-i, --instance-ip${NC} <instance-name>
           Show the ip addresses of the instance you search for. The private ip
           will be shown by default.
 
-      ${RED}-I, --instance-info${NC} <instance-name>
+      ${ORANGE}-I, --instance-info${NC} <instance-name>
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
@@ -40,15 +41,15 @@ ${REDU}OPTIONS${NC}
             o InstanceId
             o Name 
 
-      ${RED}-t, --instance-type${NC} <instance-type>
+      ${ORANGE}-t, --instance-type${NC} <instance-type>
           Optionally provide an instance type to narrow down searches further.
           By default if this option isn't selected it will just search all
           instance types.
 
-      ${RED}-a, --asg-count${NC} <asg-name>
+      ${ORANGE}-a, --asg-count${NC} <asg-name>
           Get the current instance count of an auto-scaling group.
 
-      ${RED}-A, --asg-info${NC} <asg-name>
+      ${ORANGE}-A, --asg-info${NC} <asg-name>
           Provide the following information of an auto-scaling group:
 
             o AvailabilityZone
@@ -56,18 +57,18 @@ ${REDU}OPTIONS${NC}
             o InstanceId
             o State
 
-      ${RED}-b, --s3-size${NC} <bucket-name>
+      ${ORANGE}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${RED}-s, --ssh${NC} <instance-name> [-u <username>]
+      ${ORANGE}-s, --ssh${NC} <instance-name> [-u <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
 
           Can also append the -u flag if a username other than default is wanted
-          or required.
+          or requiORANGE.
 
-      ${RED}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m]
+      ${ORANGE}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to SCP files across to, please note you still need correct permissions
@@ -77,14 +78,14 @@ ${REDU}OPTIONS${NC}
           Can also append the -m flag if wanting to download from remote server
           locally. Without flag appended it will default to uploading a file.
 
-      ${RED}-o, --output${NC} <style>
+      ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
 
             o json (default)
             o text
             o table
 
-      ${RED}-h, --help${NC}
+      ${ORANGE}-h, --help${NC}
           Display help, duh....can't believe this is even required."
 
 # aws functions - the titles speak for themselves
@@ -111,17 +112,41 @@ function get_instance_info () {
   --output ${format}
 }
 
+function get_asg_instance_count () {
+  aws autoscaling describe-auto-scaling-groups --query \
+  'AutoScalingGroups[].{ASG:AutoScalingGroupName,DES:DesiredCapacity,LC:LaunchConfigurationName}' \
+  --output text | { grep $1 || true; } | { grep $2 || true; } | awk '{print $4}'
+}
+
+function get_asg_lc_name () {
+  aws autoscaling describe-auto-scaling-groups --query \
+  'AutoScalingGroups[].{ASG:AutoScalingGroupName,LC:LaunchConfigurationName}' \
+  --output text | { grep -i $1 || true; } | awk '{print $4}'
+}
+
+function get_asg_image_id () {
+  aws autoscaling describe-launch-configurations --launch-configuration-names $1 \
+  --query 'LaunchConfigurations[]. ImageId' --output text
+}
+
 function get_asg_name () {
+  local asg_name=$1
+
   aws autoscaling describe-auto-scaling-groups --query \
   'AutoScalingGroups[].{ASG:AutoScalingGroupName}' \
   --output text | grep ${1}
 }
 
 function get_asg_info () {
-  aws autoscaling describe-auto-scaling-groups --auto-scaling-group-name \
-  "$(get_asg_name ${1})" --query "AutoScalingGroups[].Instances[]. \
-  {InstanceId:InstanceId,Health:HealthStatus,State:LifecycleState,AZ:AvailabilityZone}" \
-  --output  
+  local asg_name=$1
+  local format=$2
+
+  aws autoscaling describe-auto-scaling-groups \
+  --auto-scaling-group-name "$(get_asg_name ${1})" \
+  --query "AutoScalingGroups[].{AutoScalingGroupName:AutoScalingGroupName,MinSize:MinSize,\
+  MaxSize:MaxSize,DesiredCapacity:DesiredCapacity,LaunchConfigurationName:LaunchConfigurationName,\
+  Instances:Instances[*].{InstanceId:InstanceId,HealthStatus:HealthStatus,State:LifecycleState,\
+  AZ:AvailabilityZone}}" --output ${2}
 }
 
 function get_bucket_size () {
@@ -156,11 +181,10 @@ function create_menu () {
   if [ ${#name_array} -eq 0 ]; then
     nothing_returned_message
   else
-    # add total lengths of name tag and ip addresses.
+    # create table
     pretty_title
     pretty_line
 
-    # titles
     printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
     pretty_line
 
@@ -239,21 +263,22 @@ function empty_args () {
 
 # error messages
 function nothing_returned_message () {
-  echo -e "\n${RED}Search results returned nothing (╯°□°）╯︵ ┻━┻ ${NC}"
+  echo -e "${RED}Search results returned nothing (╯°□°）╯︵ ┻━┻ ${NC}"
   exit 1
 }
 
 function empty_message () {
-  echo -e "Option ${BOLD}-${1:-$OPTARG}${NC} requires an argument, try 'bam --help' for more information"
+  echo -e "b: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
+  exit 1
 }
 
 function multi_arg_error () {
-  echo -e "Invalid option combination, try 'bam --help' for more information"
+  echo -e "bam: invalid option combination, try 'bam --help' for more information"
   exit 1
 }
 
 function opts_message () {
-  echo -e "Option ${BOLD}-${OPTARG}${NC} does not exist, try 'bam --help' for more information"
+  echo -e "bam: option -${OPTARG} does not exist, try 'bam --help' for more information"
   exit 1
 }
 
