@@ -314,11 +314,11 @@ optspec=":a:A:b:i:t:I:d:s:S:u:mo:h"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     a)
-      a="${OPTARG}"
+      asg_count="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
       ;;
     A)
-      A="${OPTARG}"
+      asg_info="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
       ;;
     i)
@@ -328,6 +328,7 @@ while getopts "${optspec}" opts; do
     I)
       instance_search="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
+      too_many_params "${OPTARG}" "${opts}"
       ;;
     b)
       bucket_search="${OPTARG}"
@@ -361,7 +362,6 @@ while getopts "${optspec}" opts; do
       ;;
     :)
       empty_message
-      exit 2
       ;;
     *)
       opts_message
@@ -371,17 +371,32 @@ shift $(expr "${OPTIND}" - 1)
 
 # Check script for args and exit if null
 if [ "${OPTIND}" -eq 1 ]; then
-  echo "bam: try 'bam --help' for more information"
+  echo -e "bam: try 'bam --help' for more information"
   exit 1
 fi
 
+# Get asg instance count
+if [ "${asg_count}" ]; then
+  get_asg_instance_count $(get_asg_name $1) $(get_asg_lc_name $1)
+fi
+
+# Get asg info
+if [ "${asg_info}" ]; then
+  if [ $(get_asg_info "${asg_info}" "${format}" | wc -l) -le 2 ]; then
+    nothing_returned_message
+  else
+    get_asg_info "${asg_info}" "${format}"
+  fi
+fi
+
 # Get instance ips
-if [ "${i}" ]; then
-  get_instance_ips "${i}" "${o}"
+if [ "${ip_search}" ]; then
+  get_instance_ips "${ip_search}" "${format}"
 fi
 
 # Get instance info
 if [ "${instance_search}" ]; then
+  echo "${instance_search}"
   if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
     nothing_returned_message
   else
