@@ -219,21 +219,9 @@ function select_ssh_scp () {
   create_menu
 
   while true; do
-    prompt="Enter the No. of the instance you would like to SSH/SCP or type 0 or <CTRL+C> to quit: "
+    prompt="Enter the No. of the instance you would like to ${SSHSCP} or type 0 or <CTRL+C> to quit: "
     read -rp "${prompt}" num
-    case "${num}" in
-      "" | *[!.0-9]* ) # need to figure out a way to put integer range from 1 - ${#name_array}
-        echo -e "${RED}Please only select from available options!${NC}"
-        ;;
-      0)
-        echo -e "Exiting..."
-        exit 0
-        ;;
-      *)
-        clear
-        break
-        ;;
-    esac
+    valid_result ${num} ${#name_array[@]}
   done
 
   num=$((num-1)) # subtract number, because element in array starts at 0
@@ -242,22 +230,38 @@ function select_ssh_scp () {
   # SSH or SCP mode depending on flag enabled
   if [ "${ssh_mode}" ]; then
     ssh -A "${user}"@"${ip_array[num]}"
-  elif [ "${ssh_mode}" ]; then
+  elif [ "${scp_mode}" ]; then
     if [ "${scp_opt}" ]; then
-      scp "${user}"@"${ip_array[num]}":"${file}" "${path:-}"
+      scp "${user}"@"${ip_array[num]}":"${file}" "${path:-.}"
     else
       scp "${file}" "${user}"@"${ip_array[num]}":"${path:-}"
     fi
   fi
 }
 
+# validation of user input
+function valid_result () {
+  local choice=$1
+  local max=$2
+
+  if ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [ "${choice}" -gt "${max}" ]; then
+    echo -e "${RED}Please only select from available options!${NC}"
+    return 1
+  elif [[ "${choice}" -eq 0 ]]; then
+    echo -e "Exiting..."
+    exit 0
+  else
+    break
+  fi
+}
+
 # checks for empty arguments
 function empty_args () {
-    local arg=$1
-    local opt=$2
+  local arg=$1
+  local opt=$2
 
-    [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
-    && { empty_message "${opt}" >&2; exit 1; }
+  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
+  && { empty_message "${opt}" >&2; exit 1; }
 }
 
 # error messages
@@ -281,7 +285,7 @@ function opts_message () {
   exit 1
 }
 
-# Setting long opts to short opts
+# setting long opts to short opts
 for arg in "$@"; do
   shift
   case "${arg}" in
@@ -301,14 +305,14 @@ for arg in "$@"; do
   esac
 done
 
-# Default variables
+# default variables
 format="table"
 instance_type="*"
 user="$(id -un)"
 scp_opt=""
 OPTIND=1
 
-# Short opts
+# short opts
 optspec=":a:A:b:i:t:I:d:s:S:u:mo:h"
 while getopts "${optspec}" opts; do
   case "${opts}" in
@@ -367,18 +371,18 @@ while getopts "${optspec}" opts; do
 done
 shift $(expr "${OPTIND}" - 1)
 
-# Check script for args and exit if null
+# check script for args and exit if null
 if [ "${OPTIND}" -eq 1 ]; then
   echo -e "bam: try 'bam --help' for more information"
   exit 1
 fi
 
-# Get asg instance count
+# get asg instance count
 if [ "${asg_count}" ]; then
   get_asg_instance_count $(get_asg_name $1) $(get_asg_lc_name $1)
 fi
 
-# Get asg info
+# get asg info
 if [ "${asg_info}" ]; then
   if [ $(get_asg_info "${asg_info}" "${format}" | wc -l) -le 2 ]; then
     nothing_returned_message
@@ -387,12 +391,12 @@ if [ "${asg_info}" ]; then
   fi
 fi
 
-# Get instance ips
+# get instance ips
 if [ "${ip_search}" ]; then
   get_instance_ips "${ip_search}" "${format}"
 fi
 
-# Get instance info
+# get instance info
 if [[ "${instance_search}" ]] && [[ "${format}" ]]; then
   if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
     nothing_returned_message
@@ -401,12 +405,12 @@ if [[ "${instance_search}" ]] && [[ "${format}" ]]; then
   fi
 fi
 
-# Get instance info
+# get instance info
 if [ "${bucket_search}" ]; then
   get_bucket_size "${bucket_search}" "${format}"
 fi
 
-# SSH mode
+# ssh mode
 if [ "${ssh_mode}" ]; then
   SSHSCP="SSH"
   ip_array=( $(get_instance_info "${ssh_mode}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
@@ -416,7 +420,7 @@ if [ "${ssh_mode}" ]; then
   select_ssh_scp "${ssh_mode}" "${instance_type}"
 fi
 
-# SCP mode
+# scp mode
 if [[ "${#scp_mode[@]}" -ge 2 && "${#scp_mode[@]}" -le 3 ]]; then
   SSHSCP="SCP"
   ip_array=( $(get_instance_info "${scp_mode[0]}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
