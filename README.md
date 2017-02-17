@@ -94,3 +94,36 @@ Using the below command will provide an output of any S3 bucket you specify:
 For more detailed information, please use the below command:
 
     bam --help
+
+**ASG INFO**
+
+AutoScalingGroup information can be retireved in the similar fashion as the instance
+info function
+
+    bam --asg-info my-auto-scaling-group --output table
+
+    -----------------------------------------------------------------------------------------------
+    |                                  DescribeAutoScalingGroups                                  |
+    +--------------------------+------------------------------------------------------------------+
+    |  AutoScalingGroupName    |  my-auto-scaling-group                                           |
+    |  DesiredCapacity         |  2                                                               |
+    |  LaunchConfigurationName |  launch-configuration                                            |
+    |  MaxSize                 |  16                                                              |
+    |  MinSize                 |  2                                                               |
+    +--------------------------+------------------------------------------------------------------+
+    ||                                         Instances                                         ||
+    |+---------------------+-------------------+---------------------------+---------------------+|
+    ||         AZ          |   HealthStatus    |            ID             |   LifeCycleState    ||
+    |+---------------------+-------------------+---------------------------+---------------------+|
+    ||  ap-southeast-2a    |  Healthy          |  i-007b0d6775d4ba86e      |  InService          ||
+    ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
+    |+---------------------+-------------------+---------------------------+---------------------+|
+
+**ASG COuNT**
+
+There is an ability to quickly retrieve the count of instances within an autoscaling group.
+This can be achieved by running the below command:
+
+    bam --asg-count my-auto-scaling-group
+
+    2
