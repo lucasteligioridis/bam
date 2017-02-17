@@ -1,18 +1,19 @@
 #!/bin/bash
 
 # Global vars
-REDB='\033[1;31m'
-REDBU='\033[1;4;31m'
-GREEN='\033[1;36m'
+RED='\033[0;31m'
+REDU='\033[1;4;31m'
+GREEN='\033[1;32m'
+ORANGE='\033[1;31m'
 NC='\033[0m'
 BOLD='\033[1m'
 
 # Help message
 aws_usage="
-${REDBU}NAME${NC}
+${REDU}NAME${NC}
       ${BOLD}bam${NC} - DEATH TO THE AWS CONSOLE!!!
 
-${REDBU}SYNOPSIS${NC}
+${REDU}SYNOPSIS${NC}
         bam [options...] <parameters>
 
       Use the bam command so you dont have to remember all the stupid aws 
@@ -21,17 +22,17 @@ ${REDBU}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicitly, for example: ${REDB}bam -a *instancename*${NC}
+      implicitly, for example: ${RED}bam -I *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
 
-${REDBU}OPTIONS${NC}
-      ${REDB}-i, --instance-ip${NC} <instance-name>
+${REDU}OPTIONS${NC}
+      ${RED}-i, --instance-ip${NC} <instance-name>
           Show the ip addresses of the instance you search for. The private ip
           will be shown by default.
 
-      ${REDB}-I, --instance-info${NC} <instance-name>
+      ${RED}-I, --instance-info${NC} <instance-name>
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
@@ -39,15 +40,15 @@ ${REDBU}OPTIONS${NC}
             o InstanceId
             o Name 
 
-      ${REDB}-t, --instance-type${NC} <instance-type>
+      ${RED}-t, --instance-type${NC} <instance-type>
           Optionally provide an instance type to narrow down searches further.
           By default if this option isn't selected it will just search all
           instance types.
 
-      ${REDB}-a, --asg-count${NC} <asg-name>
+      ${RED}-a, --asg-count${NC} <asg-name>
           Get the current instance count of an auto-scaling group.
 
-      ${REDB}-A, --asg-info${NC} <asg-name>
+      ${RED}-A, --asg-info${NC} <asg-name>
           Provide the following information of an auto-scaling group:
 
             o AvailabilityZone
