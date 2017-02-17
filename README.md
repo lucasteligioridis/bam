@@ -47,11 +47,16 @@ select the number row that matches the instance you would like to SSH to.
 As with SSH, you can SCP in the same fashion, a table of instances will appear after the below
 command is run, please be sure to include your source file that you would like to SCP:
 
-    bam --scp instance-name --scp /path/to/source/file.txt
+    bam --scp instance-name --scp local_file.txt
+    scp local_file.txt lucas044@172.10.10.100:/home/lucas044
+
+    bam --scp instance-name --scp file.txt --scp /tmp/dir/local_file.txt
+    scp local_file.txt lucas044@172.10.10.100:/tmp/dir/local_file.txt
 
 You can also use this function to download files remotely by appending the -m flag.
 
-    bam --scp instance-name --scp /path/to/target/file.txt --scp /local/dir/to/download/to -m
+    bam --scp instance-name --scp remote_file.txt -m
+    scp lucas044@172.10.10.100:remote_file.txt .
 
 **INSTANCE INFO**
 
