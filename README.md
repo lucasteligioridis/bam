@@ -8,6 +8,7 @@ Prerequisites
 
 1. Install [AWS Unified CLI](https://github.com/aws/aws-cli)
 2. Your `~/.aws/credentials` are set appropriately.
+3. Your ssh keys are valid and in the correct directory `~/.ssh/`.
 
 Installation
 ------------
