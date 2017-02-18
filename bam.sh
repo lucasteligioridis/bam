@@ -291,6 +291,7 @@ for arg in "$@"; do
     "--instance-ip")    set -- "$@" "-i" ;;
     "--instance-info")  set -- "$@" "-I" ;;
     "--instance-type")  set -- "$@" "-t" ;;
+    "--instace-mode")   set -- "$@" "-l" ;;
     "--asg-count")      set -- "$@" "-a" ;;
     "--asg-info")       set -- "$@" "-A" ;;
     "--s3-size")        set -- "$@" "-b" ;;
@@ -308,10 +309,11 @@ format="table"
 instance_type="*"
 user="$(id -un)"
 scp_opt=""
+instance_opt=""
 OPTIND=1
 
 # short opts
-optspec=":a:A:b:i:t:I:d:s:S:u:mo:h"
+optspec=":a:A:b:i:t:I:d:s:S:u:mo:hl"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     a)
@@ -352,6 +354,9 @@ while getopts "${optspec}" opts; do
       ;;
     m)
       scp_opt="1"
+      ;;
+    l)
+      instance_opt="stopped"
       ;;
     t)
       instance_type="${OPTARG}"
@@ -395,7 +400,7 @@ if [ "${ip_search}" ]; then
 fi
 
 # get instance info
-if [[ "${instance_search}" ]] && [[ "${format}" ]]; then
+if [ "${instance_search}" ]; then
   if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
     nothing_returned_message
   else
