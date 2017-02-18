@@ -70,8 +70,8 @@ command is run, please be sure to include your source file that you would like t
     > bam --scp instance-name --scp local_file.txt
     + scp local_file.txt lucas044@172.10.10.100:/home/lucas044
 
-    > bam --scp instance-name --scp file.txt --scp /tmp/dir/local_file.txt
-    + scp local_file.txt lucas044@172.10.10.100:/tmp/dir/local_file.txt
+    > bam --scp instance-name --scp file.txt --scp /tmp/dir
+    + scp local_file.txt lucas044@172.10.10.100:/tmp/dir
 
 You can also use this function to download files remotely by appending the -m flag.
 
