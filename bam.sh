@@ -204,7 +204,7 @@ function create_menu () {
 }
 
 function pretty_title () {
-  total_len=$((${name_len} + ${ip_len} + 14))
+  total_len=$((${name_len}+${ip_len}+14))
   first_pos=$(((${total_len}/2)-1))
   last_pos=$(((${total_len}-${first_pos})-1))
   for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
