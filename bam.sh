@@ -33,13 +33,16 @@ ${ORANGEU}OPTIONS${NC}
           Show the ip addresses of the instance you search for. The private ip
           will be shown by default.
 
-      ${ORANGE}-I, --instance-info${NC} <instance-name>
+      ${ORANGE}-I, --instance-info${NC} <instance-name> [-l]
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
             o PrivateIpAddress
             o InstanceId
             o Name 
+
+          Can also provide the '-l' switch to see shutdown instances, without this
+          flag it will just show currently running instances.
 
       ${ORANGE}-t, --instance-type${NC} <instance-type>
           Optionally provide an instance type to narrow down searches further.
@@ -65,10 +68,10 @@ ${ORANGEU}OPTIONS${NC}
           searched. You then select the number of the instance you would like to
           SSH to.
 
-          Can also append the -u flag if a username other than default is wanted
-          or requiORANGE.
+          Can also provide the -u flag and provide a username, if not wanting to
+          use your machines default username.
 
-      ${ORANGE}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m]
+      ${ORANGE}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m] [-u <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to SCP files across to, please note you still need correct permissions
@@ -77,6 +80,9 @@ ${ORANGEU}OPTIONS${NC}
 
           Can also append the -m flag if wanting to download from remote server
           locally. Without flag appended it will default to uploading a file.
+
+          Can also provide the -u flag and provide a username, if not wanting to
+          use your machines default username.
 
       ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
