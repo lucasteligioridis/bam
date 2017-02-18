@@ -105,7 +105,7 @@ function get_instance_info () {
   local format=$2
 
   aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
+  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_opt:-running}" \
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
