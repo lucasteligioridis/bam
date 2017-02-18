@@ -138,8 +138,8 @@ function get_asg_image_id () {
 function get_asg_name () {
   local asg_name=$1
 
-  aws autoscaling describe-auto-scaling-groups --query 'AutoScalingGroups[].\
-  {ASG:AutoScalingGroupName}' --output text | grep ${1}
+  aws autoscaling describe-auto-scaling-groups --query \
+  "AutoScalingGroups[].{ASG:AutoScalingGroupName}" --output text | grep ${1}
 }
 
 function get_asg_info () {
