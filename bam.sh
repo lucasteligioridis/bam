@@ -220,8 +220,8 @@ function pretty_line () {
 
 # ssh or scp over to selected servers
 function select_ssh_scp () {
-  file=$3
-  path=$4
+  local file=$3
+  local path=$4
 
   create_menu
 
