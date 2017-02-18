@@ -230,12 +230,10 @@ function select_ssh_scp () {
   # SSH or SCP mode depending on flag enabled
   if [ "${ssh_mode}" ]; then
     ssh -A "${user}"@"${ip_array[num]}"
-  elif [ "${scp_mode}" ]; then
-    if [ "${scp_opt}" ]; then
-      scp "${user}"@"${ip_array[num]}":"${file}" "${path:-.}"
-    else
-      scp "${file}" "${user}"@"${ip_array[num]}":"${path:-}"
-    fi
+  elif [[ "${scp_mode}" && "${scp_opt}" ]]; then
+    scp "${user}"@"${ip_array[num]}":"${file}" "${path:-.}"
+  else
+    scp "${file}" "${user}"@"${ip_array[num]}":"${path:-}"
   fi
 }
 
