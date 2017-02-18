@@ -204,10 +204,18 @@ function create_menu () {
 }
 
 function pretty_title () {
-  total_len=$((${name_len} + ${ip_len} + 9))
-  half_len=$((total_len/2))
-  for ((i=1; i<=$((${total_len}+5)); i++)); do printf "-"; done && printf "\n"
-  printf "| ${ORANGE}%$((${half_len}-1))s${NC} %$((${half_len}+2))s|\n" "${SSHSCP}" ""
+  total_len=$((${name_len} + ${ip_len} + 14))
+  space_pos=$(((${total_len}-5)/2))
+  first_pos=$((space_pos))
+  if [ $((total_len%2)) -eq 0 ]; then
+    first_pos=$((first_pos-1));
+  else
+    first_pos=$((first_pos-2));
+  fi
+  echo ${total_len}
+  echo ${space_pos}
+  for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
+  printf "|%$((${first_pos}))s%s%$((${space_pos}+2))s|\n" "" "${SSHSCP}" ""
 }
 
 function pretty_line () {
