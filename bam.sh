@@ -212,8 +212,6 @@ function pretty_title () {
   else
     first_pos=$((first_pos-2));
   fi
-  echo ${total_len}
-  echo ${space_pos}
   for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
   printf "|%$((${first_pos}))s%s%$((${space_pos}+2))s|\n" "" "${SSHSCP}" ""
 }
