@@ -248,7 +248,8 @@ function valid_result () {
   local choice=$1
   local max=$2
 
-  if ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [ "${choice}" -gt "${max}" ]; then
+  if ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [[ "${choice}" -gt "${max}"\
+  || -z "${choice}" || "${choice}" =~ ^[[:space:]]*$ ]]; then
     echo -e "${RED}Please only select from available options!${NC}"
     return 1
   elif [[ "${choice}" -eq 0 ]]; then
