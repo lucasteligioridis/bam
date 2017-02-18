@@ -157,7 +157,7 @@ info function
     ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
     |+---------------------+-------------------+---------------------------+---------------------+|
 
-**ASG COuNT**
+**ASG COUNT**
 
 There is an ability to quickly retrieve the count of instances within an autoscaling group.
 This can be achieved by running the below command:
