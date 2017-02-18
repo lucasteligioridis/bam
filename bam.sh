@@ -205,15 +205,10 @@ function create_menu () {
 
 function pretty_title () {
   total_len=$((${name_len} + ${ip_len} + 14))
-  space_pos=$(((${total_len}-5)/2))
-  first_pos=$((space_pos))
-  if [ $((total_len%2)) -eq 0 ]; then
-    first_pos=$((first_pos-1));
-  else
-    first_pos=$((first_pos-2));
-  fi
+  first_pos=$(((${total_len}/2)-1))
+  last_pos=$(((${total_len}-${first_pos})-1))
   for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
-  printf "|%$((${first_pos}))s%s%$((${space_pos}+2))s|\n" "" "${SSHSCP}" ""
+  printf "|%$((${first_pos}))s%$((${last_pos}))s\n" "${SSHSCP}" "|"
 }
 
 function pretty_line () {
