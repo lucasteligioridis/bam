@@ -63,13 +63,16 @@ ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${ORANGE}-s, --ssh${NC} <instance-name> [-u <username>]
+      ${ORANGE}-s, --ssh${NC} <instance-name> [-u <username>] [-c <command>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
 
           Can also provide the -u flag and provide a username, if not wanting to
           use your machines default username.
+
+          The -c flag with a parameter can also be provided to send a command to
+          the remote machine.
 
       ${ORANGE}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m] [-u <username>]
           Provide a list of options that are returned from the instance name
@@ -248,7 +251,7 @@ Enter one of the valid options: "
 
   # scp to single instance
   if [ "${ssh_mode}" ]; then
-    ssh "${user}"@"${ip_array[num]}"
+    ssh "${user}"@"${ip_array[num]}" "${ssh_command:-}"
   elif [[ "${scp_mode}" && "${scp_opt}" ]]; then
     scp "${user}"@"${ip_array[num]}":"${file}" "${path_dir:-.}"
   elif [ "${scp_mode}" ]; then
@@ -350,6 +353,7 @@ for arg in "$@"; do
     "--asg-info")       set -- "$@" "-A" ;;
     "--s3-size")        set -- "$@" "-b" ;;
     "--ssh")            set -- "$@" "-s" ;;
+    "--ssh-command")    set -- "$@" "-c" ;;
     "--scp")            set -- "$@" "-S" ;;
     "--scp-mode")       set -- "$@" "-m" ;;
     "--user")           set -- "$@" "-u" ;;
@@ -364,10 +368,11 @@ instance_type="*"
 user="$(id -un)"
 scp_opt=""
 instance_opt=""
+ssh_command=""
 OPTIND=1
 
 # short opts
-optspec=":a:A:b:i:t:I:d:s:S:u:mo:hl"
+optspec=":a:A:b:i:t:I:d:s:S:c:u:mo:hl"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     a)
@@ -398,6 +403,10 @@ while getopts "${optspec}" opts; do
     S)
       [ "${ssh_mode}" ] && multi_arg_error
       scp_mode+=("${OPTARG}")
+      empty_args "${OPTARG}" "${opts}"
+      ;;
+    c)
+      ssh_command="${OPTARG}"
       empty_args "${OPTARG}" "${opts}"
       ;;
     o)
