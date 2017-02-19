@@ -221,31 +221,77 @@ function pretty_line () {
 # ssh or scp over to selected servers
 function select_ssh_scp () {
   local file=$3
-  local path=$4
+  local path_dir=$4
 
   create_menu
 
   while true; do
-    prompt="Enter the No. of the instance you would like to ${SSHSCP} or type 0 or <CTRL+C> to quit: "
+    prompt="Enter one of the following valid options:
+o No. - To ${SSHSCP} on a single instance
+o all - To ${SSHSCP} on all listed instances
+o 0   - To quit
+
+Enter one of the valid options: "
     read -rp "${prompt}" num
-    valid_result ${num} ${#name_array[@]}
+
+    # scp to all servers in list
+    if [[ "${num}" == "all" && "${scp_mode}" ]]; then
+      scp_all "${num}" "${scp_mode}" "${file}" "${path_dir}"
+    fi
+
+    # check for valid input
+    valid_result_integer "${num}" "${#name_array[@]}"
   done
 
-  num=$((num-1)) # subtract number, because element in array starts at 0
-  printf "Connecting to...\nHost: ${name_array[num]}\nIP: ${ip_array[num]}\n\n"
+  # subtract number, because element in array starts at 0
+  num=$((num-1))
 
-  # SSH or SCP mode depending on flag enabled
+  # scp to single instance
   if [ "${ssh_mode}" ]; then
-    ssh -A "${user}"@"${ip_array[num]}"
+    ssh "${user}"@"${ip_array[num]}"
   elif [[ "${scp_mode}" && "${scp_opt}" ]]; then
-    scp "${user}"@"${ip_array[num]}":"${file}" "${path:-.}"
-  else
-    scp "${file}" "${user}"@"${ip_array[num]}":"${path:-}"
+    scp "${user}"@"${ip_array[num]}":"${file}" "${path_dir:-.}"
+  elif [ "${scp_mode}" ]; then
+    scp "${file}" "${user}"@"${ip_array[num]}":"${path_dir:-}"
+  fi
+}
+
+function scp_all () {
+  local choice=$1
+  local mode=$2
+  local file=$3
+  local path_dir=$4
+
+  while true; do
+    prompt="Are you sure you want to SCP to ALL servers in this list <yes/no>? "
+    read -rp "${prompt}" input
+    if [[ ! "${input}" =~ ^(yes|no)$ ]]; then
+      echo -e "${RED}Please only type 'yes' or 'no'${NC}"
+    else
+      break
+    fi
+  done
+
+  if [ "${input}" == "yes" ]; then
+    if [ "${scp_opt}" ]; then
+      for ip in "${ip_array[@]}"; do
+        scp "${user}"@"${ip}":"${file}" "${path_dir:-.}"
+      done
+      exit 0
+    else
+      for ip in "${ip_array[@]}"; do
+        scp "${file}" "${user}"@"${ip}":"${path_dir:-}"
+      done
+      exit 0
+    fi
+  elif [ "${input}" == "no" ]; then
+    echo -e "Exiting..."
+    exit 0
   fi
 }
 
 # validation of user input
-function valid_result () {
+function valid_result_integer () {
   local choice=$1
   local max=$2
 
