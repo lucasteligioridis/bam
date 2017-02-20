@@ -113,7 +113,7 @@ function get_instance_info () {
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
-  --output ${format}
+  --output "${format}"
 }
 
 function get_asg_lc_name () {
@@ -139,11 +139,11 @@ function get_asg_info () {
   local format=$2
 
   aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-name "$(get_asg_name ${1})" \
+  --auto-scaling-group-name "$(get_asg_name ${asg_name})" \
   --query "AutoScalingGroups[].{AutoScalingGroupName:AutoScalingGroupName,MinSize:MinSize,\
   MaxSize:MaxSize,DesiredCapacity:DesiredCapacity,LaunchConfigurationName:LaunchConfigurationName,\
   Instances:Instances[*].{InstanceId:InstanceId,HealthStatus:HealthStatus,State:LifecycleState,\
-  AZ:AvailabilityZone}}" --output ${2}
+  AZ:AvailabilityZone}}" --output "${format}"
 }
 
 function get_bucket_size () {
@@ -155,17 +155,17 @@ function get_bucket_size () {
   --start-time "$(echo "${now} - 86400" | bc)" --end-time "${now}" \
   --metric-name BucketSizeBytes --period 86400 --statistics Sum --unit Bytes \
   --dimensions Name=BucketName,Value=${bucket_name} Name=StorageType,Value=StandardStorage \
-  --output ${format}
+  --output "${format}"
 }
 
-# get the longest string in array and print out length.
+# get the longest string in array and print out length
 function element_length () {
   local array=$1
   array=($@)
 
   longest=""
-  for element in ${array[@]}; do
-    if [ ${#element} -gt ${#longest} ]; then
+  for element in "${array[@]}"; do
+    if [ "${#element}" -gt "${#longest}" ]; then
       longest=${element}
     fi
   done
@@ -178,10 +178,10 @@ function create_menu () {
   if [ ${#name_array} -eq 0 ]; then
     nothing_returned_message
   else
+
     # create table
     pretty_title
     pretty_line
-
     printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
     pretty_line
 
@@ -189,7 +189,6 @@ function create_menu () {
     for ((i=1; i<=${#name_array[@]}; i++)); do
         printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
     done
-
     pretty_line
     printf "\n"
   fi
@@ -237,12 +236,14 @@ Enter one of the valid options: "
     valid_result "${num}" "${#name_array[@]}"
   done
 
+  # set index and loop count
   index=$((num-1))
   loop_count="${#num}"
 
   are_you_sure
 
   if [[ "${input}" == "yes" ]]; then
+    # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" && "${ssh_command}" ]]; then
       index=$((num))
       loop_count=${#ip_array[@]}
@@ -256,7 +257,10 @@ Enter one of the valid options: "
       ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
       echo -e "\n"
     done
+
+    # exit cleanly
     exit 0
+
   elif [[ "${input}" == "no" ]]; then
     echo -e "Exiting..."
     exit 0
@@ -280,14 +284,14 @@ Enter one of the valid options: "
     valid_result "${num}" "${#name_array[@]}"
   done
 
+  # set index and loop count
   index=$((num-1))
   loop_count="${#num}"
 
   are_you_sure
 
   if [[ "${input}" == "yes" ]]; then
-    index=$((num-1))
-    loop_count="${#num}"
+    # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" ]]; then
       index=$((num))
       loop_count=${#ip_array[@]}
@@ -306,14 +310,18 @@ Enter one of the valid options: "
       scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${source}" "${target}"
       echo -e "\n"
     done
+
+    # exit cleanly
     exit 0
+
   elif [[ "${input}" == "no" ]]; then
     echo -e "Exiting..."
     exit 0
   fi
 }
 
-# validation of user input
+# validation of user input 
+# TODO fix this ugly function
 function valid_result () {
   local choice=$1
   local max=$2
@@ -335,7 +343,7 @@ function valid_result () {
   fi
 }
 
-# checks for empty arguments
+# checks for empty arguments on short and long opts
 function short_empty_args () {
   local arg=$1
   local opt=$2
@@ -344,7 +352,6 @@ function short_empty_args () {
   && { short_empty_message "${opt}" >&2; exit 1; }
 }
 
-# checks for empty arguments
 function long_empty_args () {
   local arg=$1
   local opt=$2
@@ -551,7 +558,7 @@ while getopts "${optspec}" opts; do
 done
 shift $(expr "${OPTIND}" - 1)
 
-# catch all for any unusual entires
+# catch all for any empty options
 if [ "${OPTIND}" -eq 1 ]; then
   echo -e "bam: no options specified, try 'bam --help' for more information"
   exit 1
