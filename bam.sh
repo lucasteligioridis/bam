@@ -49,9 +49,6 @@ ${ORANGEU}OPTIONS${NC}
           By default if this option isn't selected it will just search all
           instance types.
 
-      ${ORANGE}-a, --asg-count${NC} <asg-name>
-          Get the current instance count of an auto-scaling group.
-
       ${ORANGE}-A, --asg-info${NC} <asg-name>
           Provide the following information of an auto-scaling group:
 
@@ -119,12 +116,6 @@ function get_instance_info () {
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
   --output ${format}
-}
-
-function get_asg_instance_count () {
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName,DES:DesiredCapacity,LC:LaunchConfigurationName}' \
-  --output text | { grep $1 || true; } | { grep $2 || true; } | awk '{print $4}'
 }
 
 function get_asg_lc_name () {
