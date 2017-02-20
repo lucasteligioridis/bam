@@ -116,22 +116,11 @@ function get_instance_info () {
   --output "${format}"
 }
 
-function get_asg_lc_name () {
-  aws autoscaling describe-auto-scaling-groups --query \
-  'AutoScalingGroups[].{ASG:AutoScalingGroupName,LC:LaunchConfigurationName}' \
-  --output text | { grep -i $1 || true; } | awk '{print $4}'
-}
-
-function get_asg_image_id () {
-  aws autoscaling describe-launch-configurations --launch-configuration-names $1 \
-  --query 'LaunchConfigurations[]. ImageId' --output text
-}
-
 function get_asg_name () {
   local asg_name=$1
 
   aws autoscaling describe-auto-scaling-groups --query \
-  "AutoScalingGroups[].{ASG:AutoScalingGroupName}" --output text | grep ${1}
+  "AutoScalingGroups[].{ASG:AutoScalingGroupName}" --output text | grep -i "${asg_name}"
 }
 
 function get_asg_info () {
