@@ -200,23 +200,18 @@ function element_length () {
 
 # create menu with options to select from
 function create_menu () {
-  if [ ${#name_array} -eq 0 ]; then
-    nothing_returned_message
-  else
+  # create table
+  pretty_title
+  pretty_line
+  printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
+  pretty_line
 
-    # create table
-    pretty_title
-    pretty_line
-    printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
-    pretty_line
-
-    # print out instance information
-    for ((i=1; i<=${#name_array[@]}; i++)); do
-        printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
-    done
-    pretty_line
-    printf "\n"
-  fi
+  # print out instance information
+  for ((i=1; i<=${#name_array[@]}; i++)); do
+      printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
+  done
+  pretty_line
+  printf "\n"
 }
 
 function pretty_title () {
