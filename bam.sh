@@ -448,6 +448,7 @@ while getopts "${optspec}" opts; do
             ;;
           instance-type)
             instance_type="${!OPTIND}"
+            long_empty_args "${ssh_command}" "${opts}"
             ;;
           help)
             echo -e "${aws_usage}"
@@ -502,6 +503,7 @@ while getopts "${optspec}" opts; do
       ;;
     t)
       instance_type="${OPTARG}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     h)
       echo -e "${aws_usage}"
