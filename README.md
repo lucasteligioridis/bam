@@ -105,7 +105,7 @@ command is run, please be sure to include your source file that you would like t
 
 You can also use this function to download files remotely by appending the -m flag.
 
-    > bam --scp instance-name --scp remote_file.txt -m
+    > bam --scp instance-name --scp remote_file.txt --scp-mode
     + scp lucas044@172.10.10.100:remote_file.txt .
 
 As well as SSH mode, you can upload/download to multiple servers at once. See below for an
@@ -155,7 +155,8 @@ will only search for currently running instances. See below for examples:
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  r3.xlarge    |  instance-name  |  172.10.10.101 |   200.0.0.202   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-If you would like to find instances that are shutdown please append the --instance-state flag.
+If you would like to find instances with a different state please append the --instance-state <state> with the state
+you are searching for.
 
 The below command will print the output in `json` format, you can also provide `text` format.
 

@@ -29,21 +29,30 @@ ${ORANGEU}SYNOPSIS${NC}
       the application. This was just to show how the search is really done.
 
 ${ORANGEU}OPTIONS${NC}
-      ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>]
+      ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>] [--instance-state <state>]
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
             o PrivateIpAddress
+            o PublicIpAddress
             o InstanceId
             o Name 
 
-          Can also provide the '--instance-type' switch to see shutdown instances, without this
-          flag it will just show currently running instances.
+          Optionally provide an instance type with '--instance-type' to narrow
+          down searches further. By default if this option isn't selected it will
+          just search all instance types.
 
-      ${ORANGE}-t, --instance-type${NC} <instance-type>
-          Optionally provide an instance type to narrow down searches further.
-          By default if this option isn't selected it will just search all
-          instance types.
+          Can provide the state of the instance with '--instance-state' if you
+          would like to search for particular instances states.
+          Available options are:
+
+            o pending
+            o running
+            o shutting-down
+            o terminated
+            o stopped
+            o stopping
+            o * (to search all instance states)
 
       ${ORANGE}-A, --asg-info${NC} <asg-name>
           Provide the following information of an auto-scaling group:
@@ -426,11 +435,12 @@ while getopts "${optspec}" opts; do
             scp_opt="1"
             ;;
           instance-state)
-            instance_state="stopped"
+            instance_state="${!OPTIND}"
+            long_empty_args "${instance_state}" "${opts}"
             ;;
           instance-type)
             instance_type="${!OPTIND}"
-            long_empty_args "${ssh_command}" "${opts}"
+            long_empty_args "${instance_type}" "${opts}"
             ;;
           help)
             echo -e "${aws_usage}"
@@ -477,7 +487,8 @@ while getopts "${optspec}" opts; do
       scp_opt="1"
       ;;
     l)
-      instance_state="stopped"
+      instance_state="${OPTARG}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     t)
       instance_type="${OPTARG}"
