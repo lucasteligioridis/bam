@@ -212,52 +212,9 @@ function pretty_line () {
   for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+\n"
 }
 
-# ssh or scp over to selected servers
-function select_ssh_scp () {
-  local file=$3
-  local path_dir=$4
-
-  create_menu
-
+function are_you_sure () {
   while true; do
-    prompt="Enter one of the following valid options:
-o No. - To ${SSHSCP} on a single instance
-o all - To ${SSHSCP} on all listed instances
-o 0   - To quit
-
-Enter one of the valid options: "
-    read -rp "${prompt}" num
-
-    # scp to all servers in list
-    if [[ "${num}" == "all" && "${scp_mode}" ]]; then
-      scp_all "${num}" "${scp_mode}" "${file}" "${path_dir}"
-    fi
-
-    # check for valid input
-    valid_result_integer "${num}" "${#name_array[@]}"
-  done
-
-  # subtract number, because element in array starts at 0
-  num=$((num-1))
-
-  # scp to single instance
-  if [ "${ssh_mode}" ]; then
-    ssh "${user}"@"${ip_array[num]}" "${ssh_command:-}"
-  elif [[ "${scp_mode}" && "${scp_opt}" ]]; then
-    scp "${user}"@"${ip_array[num]}":"${file}" "${path_dir:-.}"
-  elif [ "${scp_mode}" ]; then
-    scp "${file}" "${user}"@"${ip_array[num]}":"${path_dir:-}"
-  fi
-}
-
-function scp_all () {
-  local choice=$1
-  local mode=$2
-  local file=$3
-  local path_dir=$4
-
-  while true; do
-    prompt="Are you sure you want to SCP to ALL servers in this list <yes/no>? "
+    prompt="Are you sure you want to ${SSHSCP} <yes/no>? "
     read -rp "${prompt}" input
     if [[ ! "${input}" =~ ^(yes|no)$ ]]; then
       echo -e "${RED}Please only type 'yes' or 'no'${NC}"
@@ -265,31 +222,100 @@ function scp_all () {
       break
     fi
   done
+}
 
-  if [ "${input}" == "yes" ]; then
-    if [ "${scp_opt}" ]; then
-      for ip in "${ip_array[@]}"; do
-        scp "${user}"@"${ip}":"${file}" "${path_dir:-.}"
-      done
-      exit 0
-    else
-      for ip in "${ip_array[@]}"; do
-        scp "${file}" "${user}"@"${ip}":"${path_dir:-}"
-      done
-      exit 0
+function select_ssh () {
+  create_menu
+
+  while true; do
+    prompt="Enter one of the following valid options:
+o No. - To SSH on a single instance
+o all - To send SSH command on all listed instances (must be accompanied with -c flag)
+o 0   - To quit
+
+Enter one of the valid options: "
+    read -rp "${prompt}" num
+    valid_result "${num}" "${#name_array[@]}"
+  done
+
+  index=$((num-1))
+  loop_count="${#num}"
+
+  are_you_sure
+
+  if [[ "${input}" == "yes" ]]; then
+    if [[ "${num}" == "all" && "${ssh_command}" ]]; then
+      index=$((num))
+      loop_count=${#ip_array[@]}
     fi
-  elif [ "${input}" == "no" ]; then
+
+    for ((i=0; i<=${loop_count}-1; i++)) do
+      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
+    done
+    exit 0
+  elif [[ "${input}" == "no" ]]; then
+    echo -e "Exiting..."
+    exit 0
+  fi
+}
+
+function select_scp () {
+  local file=$3
+  local path_dir=$4
+
+  create_menu
+
+  while true; do
+    prompt="Enter one of the following valid options:
+o No. - To SCP file on a single instance
+o all - To SCP files to all listed instances
+o 0   - To quit
+
+Enter one of the valid options: "
+    read -rp "${prompt}" num
+    valid_result "${num}" "${#name_array[@]}"
+  done
+
+  index=$((num-1))
+  loop_count="${#num}"
+
+  are_you_sure
+
+  if [[ "${input}" == "yes" ]]; then
+    index=$((num-1))
+    loop_count="${#num}"
+    if [[ "${num}" == "all" ]]; then
+      index=$((num))
+      loop_count=${#ip_array[@]}
+    fi
+
+    for ((i=0; i<=${loop_count}-1; i++)) do
+      source=${file}
+      target=${user}@${ip_array[$index+i]}:${path_dir:-}
+      if [ "${scp_opt}" ]; then
+        source=${user}@${ip_array[$index+i]}:${file}
+        target=${path_dir:-.}
+      fi
+      scp "${source}" "${target}"
+    done
+    exit 0
+  elif [[ "${input}" == "no" ]]; then
     echo -e "Exiting..."
     exit 0
   fi
 }
 
 # validation of user input
-function valid_result_integer () {
+function valid_result () {
   local choice=$1
   local max=$2
 
-  if ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [[ "${choice}" -gt "${max}"\
+  if ! [ "${ssh_command}" ] && [[ "${ssh_mode}" && "${choice}" == "all" ]]; then
+    echo -e "${RED}You cannot select 'all' without an accompanied --ssh-command${NC}"
+    return 1
+  elif [[ "${choice}" == "all" ]]; then
+    break
+  elif ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [[ "${choice}" -gt "${max}"\
   || -z "${choice}" || "${choice}" =~ ^[[:space:]]*$ ]]; then
     echo -e "${RED}Please only select from available options!${NC}"
     return 1
@@ -302,12 +328,21 @@ function valid_result_integer () {
 }
 
 # checks for empty arguments
-function empty_args () {
+function short_empty_args () {
   local arg=$1
   local opt=$2
 
   [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
-  && { empty_message "${opt}" >&2; exit 1; }
+  && { short_empty_message "${opt}" >&2; exit 1; }
+}
+
+# checks for empty arguments
+function long_empty_args () {
+  local arg=$1
+  local opt=$2
+
+  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
+  && { long_empty_message "${opt}" >&2; exit 1; }
 }
 
 # error messages
