@@ -76,15 +76,20 @@ ${ORANGEU}OPTIONS${NC}
           The ${ORANGE}--ssh-command${NC} flag with a parameter can also be provided to send a
           command to the remote machine.
 
-      ${ORANGE}-S, --scp${NC} <instance-name> --scp <filename> [--scp <dir>] [--scp-mode] [--user <username>]
+      ${ORANGE}-U, --scp-upload${NC} <instance-name> --scp-upload <filename> [--scp-upload <dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
-          to SCP files across to, please note you still need correct permissions
-          and SSH keys to authorise correctly. Target will default to your home
-          directory on the remote server, so only specify for other directories.
+          to upload files to, please note you still need correct permissions
+          and SSH keys to authorise correctly.
 
-          Can also append the ${ORANGE}--scp-mode${NC} flag if wanting to download from remote
-          server locally. Without flag appended it will default to uploading a file.
+          Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
+          wanting to use your machines default username.
+
+      ${ORANGE}-D, --scp-download${NC} <instance-name> --scp-download <filename> [--scp-download <dir>] [--user <username>]
+          Provide a list of options that are returned from the instance name
+          searched. You then select the number of the instance you would like to
+          to download files from, please note you still need correct permissions
+          and SSH keys to authorise correctly.
 
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
@@ -288,7 +293,7 @@ Enter one of the valid options: "
     for ((i=0; i<=${loop_count}-1; i++)) do
       source=${file}
       target=${user}@${ip_array[$index+i]}:${path_dir:-}
-      if [ "${scp_opt}" ]; then
+      if [ "${scp_download}" ]; then
         source=${user}@${ip_array[$index+i]}:${file}
         target=${path_dir:-.}
       fi
@@ -357,7 +362,7 @@ function long_empty_message () {
   exit 1
 }
 
-function multi_arg_error () {
+function invalid_opts_error () {
   echo -e "bam: invalid option combination, try 'bam --help' for more information"
   exit 1
 }
@@ -372,7 +377,7 @@ function long_opts_message () {
   exit 1
 }
 
-# echo -e \\n"Number of arguments: $NUMARGS"
+# check for empty args
 if [ $# -eq 0 ]; then
   echo -e "bam: try 'bam --help' for more information"
   exit 1
@@ -382,12 +387,11 @@ fi
 format="table"
 instance_type="*"
 user="$(id -un)"
-scp_opt=""
 instance_state="running"
 ssh_command=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:S:c:u:mo:hl-:"
+optspec=":A:b:t:I:d:s:D:U:c:u:mo:hl-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
@@ -409,13 +413,25 @@ while getopts "${optspec}" opts; do
             long_empty_args "${bucket_search}" "${opts}"
             ;;
           ssh)
-            [ "${scp_mode}" ] && multi_arg_error
+            [ "${scp_download}" ] && invalid_opts_error
+            [ "${scp_upload}" ] && invalid_opts_error
+            ssh_check="1"
             ssh_mode="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${ssh_mode}" "${opts}"
             ;;
-          scp)
-            [ "${ssh_mode}" ] && multi_arg_error
+          scp-upload)
+            [ "${ssh_check}" ] && invalid_opts_error
+            [ "${scp_download}" ] && invalid_opts_error
+            scp_upload="1"
+            scp_mode+=("${!OPTIND}")
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${scp_mode}" "${opts}"
+            ;;
+          scp-download)
+            [ "${ssh_check}" ] && invalid_opts_error
+            [ "${scp_upload}" ] && invalid_opts_error
+            scp_download="1"
             scp_mode+=("${!OPTIND}")
             OPTIND=$(($OPTIND+1))
             long_empty_args "${scp_mode}" "${opts}"
@@ -464,12 +480,23 @@ while getopts "${optspec}" opts; do
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
-      [ "${scp_mode}" ] && multi_arg_error
+      [ "${scp_download}" ] && invalid_opts_error
+      [ "${scp_upload}" ] && invalid_opts_error
+      ssh_check="1"
       ssh_mode="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
       ;;
-    S)
-      [ "${ssh_mode}" ] && multi_arg_error
+    U)
+      [ "${ssh_check}" ] && invalid_opts_error
+      [ "${scp_download}" ] && invalid_opts_error
+      scp_upload="1"
+      scp_mode+=("${OPTARG}")
+      short_empty_args "${OPTARG}" "${opts}"
+      ;;
+    D)
+      [ "${ssh_check}" ] && invalid_opts_error
+      [ "${scp_upload}" ] && invalid_opts_error
+      scp_download="1"
       scp_mode+=("${OPTARG}")
       short_empty_args "${OPTARG}" "${opts}"
       ;;

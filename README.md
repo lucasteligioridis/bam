@@ -97,21 +97,21 @@ with a parameter.
 As with SSH, you can SCP in the same fashion, a table of instances will appear after the below
 command is run, please be sure to include your source file that you would like to SCP:
 
-    > bam --scp instance-name --scp local_file.txt
+    > bam --scp-upload instance-name --scp-upload local_file.txt
     + scp local_file.txt lucas044@172.10.10.100:/home/lucas044
 
-    > bam --scp instance-name --scp file.txt --scp /tmp/dir
+    > bam --scp-upload instance-name --scp-upload file.txt --scp-upload /tmp/dir
     + scp local_file.txt lucas044@172.10.10.100:/tmp/dir
 
 You can also use this function to download files remotely by appending the -m flag.
 
-    > bam --scp instance-name --scp remote_file.txt --scp-mode
+    > bam --scp-download instance-name --scp-download remote_file.txt
     + scp lucas044@172.10.10.100:remote_file.txt .
 
 As well as SSH mode, you can upload/download to multiple servers at once. See below for an
 example:
 
-    > bam --scp instance-name --scp local_file.txt
+    > bam --scp-upload instance-name --scp local_file.txt
 
     -------------------------------------------
     |                  SCP                    |
@@ -135,7 +135,7 @@ example:
     Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
     local_file.txt                                           100%    0     0.0KB/s   00:00
 
-You can run the above command with the --scp-mode to download files from remote servers
+You can run the above command with the --scp-download to download files from remote servers
 locally.
 
 **INSTANCE INFO**
