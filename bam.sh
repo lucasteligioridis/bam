@@ -158,6 +158,31 @@ function get_bucket_size () {
   --output "${format}"
 }
 
+# extract data out of aws query
+function get_data () {
+  local var_name=$1
+  shift
+  local shift_by=$1
+  shift
+  for ((i=0; i<$shift_by; i++)); do
+    shift
+  done
+
+  local instances_data=($*)
+  local data
+  while [[ $# -ne 0 ]]; do
+    data+=" $1"
+    shift
+    shift
+    shift
+    shift
+    shift
+    shift
+  done
+  read -a $var_name <<< $data
+  declare -p $var_name
+}
+
 # get the longest string in array and print out length
 function element_length () {
   local array=$1
