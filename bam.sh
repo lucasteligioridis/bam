@@ -274,7 +274,7 @@ Enter one of the valid options: "
       echo -e "+------------------------------+"
       printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
       echo -e "+------------------------------+\n"
-      ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
+      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
       echo -e "\n"
     done
 
@@ -327,7 +327,7 @@ Enter one of the valid options: "
       echo -e "+------------------------------+"
       printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
       echo -e "+------------------------------+\n"
-      scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${source}" "${target}"
+      scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${source}" "${target}"
       echo -e "\n"
     done
 
