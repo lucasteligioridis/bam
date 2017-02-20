@@ -4,7 +4,6 @@
 RED='\033[0;31m'
 ORANGE='\033[1;31m'
 ORANGEU='\033[1;4;31m'
-GREEN='\033[1;32m'
 ORANGE='\033[1;31m'
 NC='\033[0m'
 BOLD='\033[1m'
@@ -75,7 +74,7 @@ ${ORANGEU}OPTIONS${NC}
           The ${ORANGE}--ssh-command${NC} flag with a parameter can also be provided to send a
           command to the remote machine.
 
-      ${ORANGE}-U, --scp-upload${NC} <instance-name> --scp-upload <filename> [--scp-upload <dir>] [--user <username>]
+      ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [<dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to upload files to, please note you still need correct permissions
@@ -84,7 +83,7 @@ ${ORANGEU}OPTIONS${NC}
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
-      ${ORANGE}-D, --scp-download${NC} <instance-name> --scp-download <filename> [--scp-download <dir>] [--user <username>]
+      ${ORANGE}-D, --scp-download${NC} <instance-name> <filename> [<dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to download files from, please note you still need correct permissions
@@ -260,8 +259,8 @@ Enter one of the valid options: "
 }
 
 function select_scp () {
-  local file=$3
-  local path_dir=$4
+  local file=$1
+  local path_dir=$2
 
   create_menu
 
@@ -341,7 +340,7 @@ function long_empty_args () {
   local arg=$1
   local opt=$2
 
-  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
+  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == --* ]] \
   && { long_empty_message "${opt}" >&2; exit 1; }
 }
 
@@ -377,7 +376,7 @@ function long_opts_message () {
 }
 
 # check for empty args
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 || $@ == "--" ]]; then
   echo -e "bam: no options specified, try 'bam --help' for more information"
   exit 1
 fi
@@ -424,17 +423,21 @@ while getopts "${optspec}" opts; do
             [ "${ssh_check}" ] && invalid_opts_error
             [ "${scp_download}" ] && invalid_opts_error
             scp_upload="1"
-            scp_mode+=("${!OPTIND}")
+            scp_instance=$2
+            scp_file=$3
+            scp_dir=$4
             OPTIND=$(($OPTIND+1))
-            long_empty_args "${scp_mode}" "${opts}"
+            long_empty_args "${scp_instance}" "${opts}"
             ;;
           scp-download)
             [ "${ssh_check}" ] && invalid_opts_error
             [ "${scp_upload}" ] && invalid_opts_error
             scp_download="1"
-            scp_mode+=("${!OPTIND}")
+            scp_instance=$2
+            scp_file=$3
+            scp_dir=$4
             OPTIND=$(($OPTIND+1))
-            long_empty_args "${scp_mode}" "${opts}"
+            long_empty_args "${scp_instance}" "${opts}"
             ;;
           ssh-command)
             ssh_command="${!OPTIND}"
@@ -494,15 +497,19 @@ while getopts "${optspec}" opts; do
       [ "${ssh_check}" ] && invalid_opts_error
       [ "${scp_download}" ] && invalid_opts_error
       scp_upload="1"
-      scp_mode+=("${OPTARG}")
-      short_empty_args "${OPTARG}" "${opts}"
+      scp_instance=$2
+      scp_file=$3
+      scp_dir=$4
+      short_empty_args "${scp_instance}" "${opts}"
       ;;
     D)
       [ "${ssh_check}" ] && invalid_opts_error
       [ "${scp_upload}" ] && invalid_opts_error
       scp_download="1"
-      scp_mode+=("${OPTARG}")
-      short_empty_args "${OPTARG}" "${opts}"
+      scp_instance=$2
+      scp_file=$3
+      scp_dir=$4
+      short_empty_args "${scp_instance}" "${opts}"
       ;;
     c)
       ssh_command="${OPTARG}"
@@ -575,14 +582,14 @@ if [ "${ssh_mode}" ]; then
 fi
 
 # scp mode
-if [[ "${#scp_mode[@]}" -ge 2 && "${#scp_mode[@]}" -le 3 ]]; then
+if [[ "${scp_instance}" && "${scp_file}" ]]; then
   SSHSCP="SCP"
-  ip_array=( $(get_instance_info "${scp_mode[0]}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
-  name_array=( $(get_instance_info "${scp_mode[0]}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
+  ip_array=( $(get_instance_info "${scp_instance}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
+  name_array=( $(get_instance_info "${scp_instance}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
-  select_scp "${scp_mode[0]}" "${instance_type}" "${scp_mode[1]}" "${scp_mode[2]}"
-elif [[ "${#scp_mode[@]}" -lt 2 && "${#scp_mode[@]}" -ge 1 ]]; then
+  select_scp "${scp_file}" "${scp_dir}"
+elif [[ -z "${scp_instance}" || -z "${scp_file}" ]]; then
   echo -e "Must specify hostname search and provide <source> to SCP, try 'bam --help' for more information"
   exit 1
 fi

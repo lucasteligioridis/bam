@@ -97,21 +97,25 @@ with a parameter.
 As with SSH, you can SCP in the same fashion, a table of instances will appear after the below
 command is run, please be sure to include your source file that you would like to SCP:
 
-    > bam --scp-upload instance-name --scp-upload local_file.txt
+    > bam --scp-upload instance-name local_file.txt
     + scp local_file.txt lucas044@172.10.10.100:/home/lucas044
 
-    > bam --scp-upload instance-name --scp-upload file.txt --scp-upload /tmp/dir
+You can also add in a 3 parameter to the command optionally to specify a custom directory, see
+below for an example:
+
+    > bam --scp-upload instance-name file.txt /tmp/dir
     + scp local_file.txt lucas044@172.10.10.100:/tmp/dir
 
-You can also use this function to download files remotely by appending the -m flag.
+You can also use the `--scp-download` command, to get a file from a remote server to your local
+machine. See below for example:
 
-    > bam --scp-download instance-name --scp-download remote_file.txt
+    > bam --scp-download instance-name remote_file.txt
     + scp lucas044@172.10.10.100:remote_file.txt .
 
 As well as SSH mode, you can upload/download to multiple servers at once. See below for an
 example:
 
-    > bam --scp-upload instance-name --scp local_file.txt
+    > bam --scp-upload instance-name local_file.txt
 
     -------------------------------------------
     |                  SCP                    |
@@ -135,14 +139,14 @@ example:
     Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
     local_file.txt                                           100%    0     0.0KB/s   00:00
 
-You can run the above command with the --scp-download to download files from remote servers
+You can run the above command with the `--scp-download` to download files from remote servers
 locally.
 
 **INSTANCE INFO**
 
 You can get important instance information information in whatever format you specify.
-By default the format is in `table` if the --output flag is not specified and by default
-will only search for currently running instances. See below for examples:
+By default the format is in `table`, you can change the format by using the  `--output`
+option. See below for examples:
 
     > bam --instance-info "instance-name"
 
@@ -155,7 +159,7 @@ will only search for currently running instances. See below for examples:
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  r3.xlarge    |  instance-name  |  172.10.10.101 |   200.0.0.202   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-If you would like to find instances with a different state please append the --instance-state <state> with the state
+If you would like to find instances with a different state please append the `--instance-state <state>` with the state
 you are searching for.
 
 The below command will print the output in `json` format, you can also provide `text` format.
