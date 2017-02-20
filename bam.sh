@@ -331,8 +331,7 @@ Enter one of the valid options: "
   fi
 }
 
-# validation of user input 
-# TODO fix this ugly function
+# validation of user input
 function valid_result () {
   local choice=$1
   local max=$2
@@ -341,13 +340,13 @@ function valid_result () {
     echo -e "Exiting..."
     exit 0
   elif ! [ "${ssh_command}" ] && [[ "${ssh_mode}" && "${choice}" == "all" ]]; then
-    echo -e "${RED}You cannot select 'all' without an accompanied --ssh-command${NC}"
+    echo -e "${RED}You cannot select 'all' without an accompanied --ssh-command${NC}\n"
     return 1
   elif [[ "${choice}" == "all" ]]; then
     break
-  elif ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || [[ "${choice}" -gt "${max}"\
-  || -z "${choice}" || "${choice}" =~ ^[[:space:]]*$ ]]; then
-    echo -e "${RED}Please only select from available options!${NC}"
+  elif ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || \
+      [[ "${choice}" -gt "${max}"|| -z "${choice}" || "${choice}" =~ ^[[:space:]]*$ ]]; then
+    echo -e "${RED}Please only select from available options!${NC}\n"
     return 1
   else
     break
