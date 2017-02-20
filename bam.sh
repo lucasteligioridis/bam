@@ -424,11 +424,10 @@ format="table"
 instance_type="*"
 user="$(id -un)"
 instance_state="running"
-ssh_command=""
 OPTIND=1
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:D:U:c:u:o:hl-:"
+optspec=":A:b:t:I:d:s:D:U:c:u:o:hlp:-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
@@ -456,6 +455,11 @@ while getopts "${optspec}" opts; do
             ssh_mode="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${ssh_mode}" "${opts}"
+            ;;
+          ssh-params)
+            ssh_params="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${ssh_params}" "${opts}"
             ;;
           scp-upload)
             [ "${ssh_check}" ] && invalid_opts_error
@@ -530,6 +534,10 @@ while getopts "${optspec}" opts; do
       ssh_check="1"
       ssh_mode="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
+      ;;
+    p)
+      ssh_params="${OPTARG}"
+      short_empty_args "${ssh_params}" "${opts}"
       ;;
     U)
       [ "${ssh_check}" ] && invalid_opts_error
