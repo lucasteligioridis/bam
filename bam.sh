@@ -274,7 +274,7 @@ Enter one of the valid options: "
       echo -e "+------------------------------+"
       printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
       echo -e "+------------------------------+\n"
-      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
+      (set -x; ssh ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
 
@@ -320,14 +320,16 @@ Enter one of the valid options: "
     for ((i=0; i<=${loop_count}-1; i++)) do
       source=${file}
       target=${user}@${ip_array[$index+i]}:${path_dir:-}
+
       if [ "${scp_download}" ]; then
         source=${user}@${ip_array[$index+i]}:${file}
         target=${path_dir:-.}
       fi
+
       echo -e "+------------------------------+"
       printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
       echo -e "+------------------------------+\n"
-      scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${source}" "${target}"
+      (set -x; scp "${source}" "${target}")
       echo -e "\n"
     done
 
