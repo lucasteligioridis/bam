@@ -607,23 +607,32 @@ if [ "${bucket_search}" ]; then
   get_bucket_size "${bucket_search}" "${format}"
 fi
 
-# ssh mode
-if [ "${ssh_mode}" ]; then
-  SSHSCP="SSH"
-  ip_array=( $(get_instance_info "${ssh_mode}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
-  name_array=( $(get_instance_info "${ssh_mode}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
+# get instance data
+if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
+  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n)
+
+  if [ -z "${instance_info}" ]; then
+    nothing_returned_message
+  fi
+
+  read -a instances_data <<< $instance_info
+
+  eval $(get_data name_array 3 ${instances_data[@]})
+  eval $(get_data ip_array 4 ${instances_data[@]})
+
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
-  select_ssh "${ssh_mode}" "${instance_type}"
+fi
+
+# ssh mode
+if [[ "${ssh_mode}" ]]; then
+  SSHSCP="SSH"
+  select_ssh
 fi
 
 # scp mode
 if [[ "${scp_instance}" && "${scp_file}" ]]; then
   SSHSCP="SCP"
-  ip_array=( $(get_instance_info "${scp_instance}" "text" "${instance_type}" | sort -n | awk '{print $5}') )
-  name_array=( $(get_instance_info "${scp_instance}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
-  ip_len=$(element_length ${ip_array[@]})
-  name_len=$(element_length ${name_array[@]})
   select_scp "${scp_file}" "${scp_dir}"
 elif [[ -z "${scp_instance}" || -z "${scp_file}" ]]; then
   echo -e "Must specify hostname search and provide <source> to SCP, try 'bam --help' for more information"
