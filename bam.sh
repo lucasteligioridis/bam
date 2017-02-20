@@ -297,7 +297,7 @@ function valid_result () {
   local choice=$1
   local max=$2
 
-  if [ "${choice}" -eq 0 ] || [ "${choice}" == "quit" ]; then
+  if [ "${choice}" -eq 0 ] 2>/dev/null || [ "${choice}" == "quit" ]; then
     echo -e "Exiting..."
     exit 0
   elif ! [ "${ssh_command}" ] && [[ "${ssh_mode}" && "${choice}" == "all" ]]; then
@@ -378,7 +378,7 @@ instance_opt=""
 ssh_command=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:i:t:I:d:s:S:c:u:mo:hl-:"
+optspec=":A:b:t:I:d:s:S:c:u:mo:hl-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
@@ -388,11 +388,6 @@ while getopts "${optspec}" opts; do
             asg_info="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${asg_info}" "${opts}"
-            ;;
-          instance-ip)
-            ip_search="${!OPTIND}"
-            OPTIND=$(($OPTIND+1))
-            long_empty_args "${ip_search}" "${opts}"
             ;;
           instance-info)
             instance_search="${!OPTIND}"
@@ -448,10 +443,6 @@ while getopts "${optspec}" opts; do
     # short opts
     A)
       asg_info="${OPTARG}"
-      short_empty_args "${OPTARG}" "${opts}"
-      ;;
-    i)
-      ip_search="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     I)
@@ -512,11 +503,6 @@ if [ "${asg_info}" ]; then
   else
     get_asg_info "${asg_info}" "${format}"
   fi
-fi
-
-# get instance ips
-if [ "${ip_search}" ]; then
-  get_instance_ips "${ip_search}" "${format}"
 fi
 
 # get instance info
