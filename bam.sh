@@ -74,7 +74,7 @@ ${ORANGEU}OPTIONS${NC}
           The ${ORANGE}--ssh-command${NC} flag with a parameter can also be provided to send a
           command to the remote machine.
 
-      ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [<dir>] [--user <username>]
+      ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [--scp-dir <dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to upload files to, please note you still need correct permissions
@@ -83,7 +83,7 @@ ${ORANGEU}OPTIONS${NC}
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
-      ${ORANGE}-D, --scp-download${NC} <instance-name> <filename> [<dir>] [--user <username>]
+      ${ORANGE}-D, --scp-download${NC} <instance-name> <filename> [--scp-dir <dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to download files from, please note you still need correct permissions
@@ -416,7 +416,7 @@ instance_state="running"
 OPTIND=1
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:D:U:c:u:o:hlp:-:"
+optspec=":A:b:t:I:d:s:D:d:U:c:u:o:hlp:-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
@@ -456,9 +456,9 @@ while getopts "${optspec}" opts; do
             scp_upload="1"
             scp_instance=$2
             scp_file=$3
-            scp_dir=$4
             OPTIND=$(($OPTIND+1))
             long_empty_args "${scp_instance}" "${opts}"
+            shift
             ;;
           scp-download)
             [ "${ssh_check}" ] && invalid_opts_error
@@ -466,9 +466,15 @@ while getopts "${optspec}" opts; do
             scp_download="1"
             scp_instance=$2
             scp_file=$3
-            scp_dir=$4
             OPTIND=$(($OPTIND+1))
             long_empty_args "${scp_instance}" "${opts}"
+            shift
+            ;;
+          scp-dir)
+            [ "${ssh_check}" ] && invalid_opts_error
+            scp_dir="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${scp_dir}" "${opts}"
             ;;
           ssh-command)
             ssh_command="${!OPTIND}"
@@ -534,8 +540,8 @@ while getopts "${optspec}" opts; do
       scp_upload="1"
       scp_instance=$2
       scp_file=$3
-      scp_dir=$4
       short_empty_args "${scp_instance}" "${opts}"
+      shift
       ;;
     D)
       [ "${ssh_check}" ] && invalid_opts_error
@@ -543,8 +549,13 @@ while getopts "${optspec}" opts; do
       scp_download="1"
       scp_instance=$2
       scp_file=$3
-      scp_dir=$4
       short_empty_args "${scp_instance}" "${opts}"
+      shift
+      ;;
+    d)
+      [ "${ssh_check}" ] && invalid_opts_error
+      scp_dir="${OPTARG}"
+      short_empty_args "${scp_dir}" "${opts}"
       ;;
     c)
       ssh_command="${OPTARG}"

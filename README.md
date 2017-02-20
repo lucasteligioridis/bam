@@ -146,10 +146,10 @@ command is run, please be sure to include your source file that you would like t
     > bam --scp-upload instance-name local_file.txt
     + scp local_file.txt lucas044@172.10.10.100:/home/lucas044
 
-You can also add in a 3 parameter to the command optionally to specify a custom directory, see
+You can also add the `--scp-dir` option to the command optionally to specify a custom directory, see
 below for an example:
 
-    > bam --scp-upload instance-name file.txt /tmp/dir
+    > bam --scp-upload instance-name file.txt --scp-dir /tmp/dir
     + scp local_file.txt lucas044@172.10.10.100:/tmp/dir
 
 You can also use the `--scp-download` command, to get a file from a remote server to your local
