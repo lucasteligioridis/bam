@@ -63,7 +63,7 @@ ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${ORANGE}-s, --ssh${NC} <instance-name> [--user <username>] [--ssh-command <command>]
+      ${ORANGE}-s, --ssh${NC} <instance-name> [--user <username>] [--ssh-command <command>] [--ssh-params <parameters>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
@@ -73,6 +73,9 @@ ${ORANGEU}OPTIONS${NC}
 
           The ${ORANGE}--ssh-command${NC} flag with a parameter can also be provided to send a
           command to the remote machine.
+
+          ${ORANGE}--ssh-params${NC} can be added for any custom ssh options you
+          would like to parse in as well. By default this is set to nothing.
 
       ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [--scp-dir <dir>] [--user <username>]
           Provide a list of options that are returned from the instance name
