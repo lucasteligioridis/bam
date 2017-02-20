@@ -38,11 +38,11 @@ ${ORANGEU}OPTIONS${NC}
             o InstanceId
             o Name 
 
-          Optionally provide an instance type with '--instance-type' to narrow
+          Optionally provide an instance type with ${ORANGE}--instance-type${NC} to narrow
           down searches further. By default if this option isn't selected it will
           just search all instance types.
 
-          Can provide the state of the instance with '--instance-state' if you
+          Can provide the state of the instance with ${ORANGE}--instance-state${NC} if you
           would like to search for particular instances states.
           Available options are:
 
@@ -70,10 +70,10 @@ ${ORANGEU}OPTIONS${NC}
           searched. You then select the number of the instance you would like to
           SSH to.
 
-          Can also provide the --username flag and provide a username, if not
+          Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
-          The --ssh-command flag with a parameter can also be provided to send a
+          The ${ORANGE}--ssh-command${NC} flag with a parameter can also be provided to send a
           command to the remote machine.
 
       ${ORANGE}-S, --scp${NC} <instance-name> --scp <filename> [--scp <dir>] [--scp-mode] [--user <username>]
@@ -83,10 +83,10 @@ ${ORANGEU}OPTIONS${NC}
           and SSH keys to authorise correctly. Target will default to your home
           directory on the remote server, so only specify for other directories.
 
-          Can also append the --scp-mode flag if wanting to download from remote
+          Can also append the ${ORANGE}--scp-mode${NC} flag if wanting to download from remote
           server locally. Without flag appended it will default to uploading a file.
 
-          Can also provide the --username flag and provide a username, if not
+          Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
       ${ORANGE}-o, --output${NC} <style>
