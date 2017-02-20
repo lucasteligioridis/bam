@@ -22,6 +22,18 @@ Installation
 Usage
 -----
 
+GENERAL
+-------
+
+All searches with instances names can be completed with wildcards, see below for examples:
+
+    > bam --ssh "*instance-name*"
+
+    > bam --scp-upload "instan*name" local_file.txt
+
+Depending on where you place the wildcard and what system you are running, you may
+have to use quotes, I would recommend this approach regardless.
+
 SSH
 ---
 
@@ -47,6 +59,12 @@ you can have a table of results that you can then SSH to:
     Enter one of the valid options: 1
     Are you sure you want to SSH <yes/no>? yes
 
+
+    +------------------------------+
+    | Connecting to 172.10.10.100  |
+    +------------------------------+
+
+    + ssh lucas044@172.10.10.100 ''
     Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
     Welcome to Ubuntu 16.04 LTS (GNU/Linux 4.4.0-24-generic x86_64)
 
@@ -85,13 +103,39 @@ the entire list of machines, see below for an example:
     Enter one of the valid options: all
     Are you sure you want to SSH <yes/no>? yes
 
+
+    +------------------------------+
+    | Connecting to 172.10.10.100  |
+    +------------------------------+
+
+    + ssh lucas044@172.10.10.100 ''
     Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
     Mon Feb 20 05:22:54 UTC 2017
+
+    +------------------------------+
+    | Connecting to 172.10.10.101  |
+    +------------------------------+
+
+    + ssh lucas044@172.10.10.101 ''
     Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
     Mon Feb 20 05:10:36 UTC 2017
 
 The `all` command will not work unless the `--ssh-command` option has been specified
 with a parameter.
+
+If any special ssh parametes need to be parsed in, this can be achieved with the
+`--ssh-params` option, please note that you must wrap the argument in quotes. See
+below for an example:
+
+    > bam --ssh instance-name --ssh-command "date" --ssh-params "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+    +------------------------------+
+    | Connecting to 172.10.10.100  |
+    +------------------------------+
+
+    + ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null lucas044@172.10.10.100 date
+    Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
+    Mon Feb 20 21:10:35 UTC 2017
 
 SCP
 ---
@@ -136,8 +180,20 @@ example:
     Enter one of the valid options: all
     Are you sure you want to SCP <yes/no>? yes
 
+
+    +------------------------------+
+    | Connecting to 172.10.10.100  |
+    +------------------------------+
+
+    + scp local_file.txt lucas044@172.10.10.100:
     Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
     local_file.txt                                           100%    0     0.0KB/s   00:00
+
+    +------------------------------+
+    | Connecting to 172.10.10.101  |
+    +------------------------------+
+
+    + scp local_file.txt lucas044@172.10.10.101:
     Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
     local_file.txt                                           100%    0     0.0KB/s   00:00
 
