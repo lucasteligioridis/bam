@@ -348,17 +348,17 @@ function long_empty_args () {
 
 # error messages
 function nothing_returned_message () {
-  echo -e "${RED}Search results returned nothing (╯°□°）╯︵ ┻━┻ ${NC}"
+  echo -e "${RED}bam: Search results returned nothing (╯°□°）╯︵ ┻━┻ ${NC}"
   exit 1
 }
 
 function short_empty_message () {
-  echo -e "b: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
+  echo -e "bam: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
   exit 1
 }
 
 function long_empty_message () {
-  echo -e "b: option --${!OPTIND:-$OPTARG} requires parameter, try 'bam --help' for more information"
+  echo -e "bam: option --${!OPTIND:-$OPTARG} requires parameter, try 'bam --help' for more information"
   exit 1
 }
 
@@ -379,7 +379,7 @@ function long_opts_message () {
 
 # check for empty args
 if [ $# -eq 0 ]; then
-  echo -e "bam: try 'bam --help' for more information"
+  echo -e "bam: no options specified, try 'bam --help' for more information"
   exit 1
 fi
 
@@ -389,6 +389,7 @@ instance_type="*"
 user="$(id -un)"
 instance_state="running"
 ssh_command=""
+OPTIND=1
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
 optspec=":A:b:t:I:d:s:D:U:c:u:mo:hl-:"
@@ -443,24 +444,28 @@ while getopts "${optspec}" opts; do
             ;;
           output)
             format="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
             ;;
           user)
             user="${!OPTIND}"
-            ;;
-          scp-mode)
-            scp_opt="1"
+            OPTIND=$(($OPTIND+1))
             ;;
           instance-state)
             instance_state="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
             long_empty_args "${instance_state}" "${opts}"
             ;;
           instance-type)
             instance_type="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
             long_empty_args "${instance_type}" "${opts}"
             ;;
           help)
             echo -e "${aws_usage}"
             exit 0
+            ;;
+          :)
+            long_empty_message
             ;;
           *)
             long_opts_message
@@ -510,9 +515,6 @@ while getopts "${optspec}" opts; do
     u)
       user="${OPTARG}"
       ;;
-    m)
-      scp_opt="1"
-      ;;
     l)
       instance_state="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
@@ -533,6 +535,13 @@ while getopts "${optspec}" opts; do
   esac
 done
 shift $(expr "${OPTIND}" - 1)
+
+echo "${OPTIND}"
+# catch all for any unusual entires
+if [ "${OPTIND}" -eq 1 ]; then
+  echo -e "bam: no options specified, try 'bam --help' for more information"
+  exit 1
+fi
 
 # get asg info
 if [ "${asg_info}" ]; then
