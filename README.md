@@ -22,7 +22,8 @@ Installation
 Usage
 -----
 
-**SSH**
+SSH
+---
 
 You have the ability to SSH to the machines on AWS, by providing a search term by instance name
 you can have a table of results that you can then SSH to:
@@ -92,7 +93,8 @@ the entire list of machines, see below for an example:
 The `all` command will not work unless the `--ssh-command` option has been specified
 with a parameter.
 
-**SCP**
+SCP
+---
 
 As with SSH, you can SCP in the same fashion, a table of instances will appear after the below
 command is run, please be sure to include your source file that you would like to SCP:
@@ -142,7 +144,8 @@ example:
 You can run the above command with the `--scp-download` to download files from remote servers
 locally.
 
-**INSTANCE INFO**
+INSTANCE INFO
+-------------
 
 You can get important instance information information in whatever format you specify.
 By default the format is in `table`, you can change the format by using the  `--output`
@@ -192,7 +195,8 @@ and specify the particular instance type, see below for example:
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  t2.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-**S3 BUCKET**
+S3 BUCKET
+---------
 
 We can easily retrieve a bucket size and count by interrogating the cloudwatch metrics.
 Using the below command will provide an output of any S3 bucket you specify:
@@ -211,7 +215,8 @@ Using the below command will provide an output of any S3 bucket you specify:
     ||  6228552066.0 |  2017-02-15T14:50:00Z  |  Bytes ||
     |+---------------+------------------------+--------+|
 
-**ASG INFO**
+ASG INFO
+--------
 
 AutoScalingGroup information can be retireved in the similar fashion as the instance
 info function
@@ -235,7 +240,8 @@ info function
     ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
     |+---------------------+-------------------+---------------------------+---------------------+|
 
-**HELP**
+HELP
+----
 
 For more detailed information on each option, please use the following command:
 
