@@ -97,7 +97,7 @@ function get_instance_info () {
   local format=$2
 
   aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_opt:-running}" \
+  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_state}" \
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
@@ -374,7 +374,7 @@ format="table"
 instance_type="*"
 user="$(id -un)"
 scp_opt=""
-instance_opt=""
+instance_state="running"
 ssh_command=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
@@ -426,7 +426,7 @@ while getopts "${optspec}" opts; do
             scp_opt="1"
             ;;
           instance-state)
-            instance_opt="stopped"
+            instance_state="stopped"
             ;;
           instance-type)
             instance_type="${!OPTIND}"
@@ -477,7 +477,7 @@ while getopts "${optspec}" opts; do
       scp_opt="1"
       ;;
     l)
-      instance_opt="stopped"
+      instance_state="stopped"
       ;;
     t)
       instance_type="${OPTARG}"
