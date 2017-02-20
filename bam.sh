@@ -351,8 +351,13 @@ function nothing_returned_message () {
   exit 1
 }
 
-function empty_message () {
+function short_empty_message () {
   echo -e "b: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
+  exit 1
+}
+
+function long_empty_message () {
+  echo -e "b: option --${!OPTIND:-$OPTARG} requires parameter, try 'bam --help' for more information"
   exit 1
 }
 
@@ -361,32 +366,21 @@ function multi_arg_error () {
   exit 1
 }
 
-function opts_message () {
+function short_opts_message () {
   echo -e "bam: option -${OPTARG} does not exist, try 'bam --help' for more information"
   exit 1
 }
 
-# setting long opts to short opts
-for arg in "$@"; do
-  shift
-  case "${arg}" in
-    "--help")           set -- "$@" "-h" ;;
-    "--instance-ip")    set -- "$@" "-i" ;;
-    "--instance-info")  set -- "$@" "-I" ;;
-    "--instance-type")  set -- "$@" "-t" ;;
-    "--instace-mode")   set -- "$@" "-l" ;;
-    "--asg-count")      set -- "$@" "-a" ;;
-    "--asg-info")       set -- "$@" "-A" ;;
-    "--s3-size")        set -- "$@" "-b" ;;
-    "--ssh")            set -- "$@" "-s" ;;
-    "--ssh-command")    set -- "$@" "-c" ;;
-    "--scp")            set -- "$@" "-S" ;;
-    "--scp-mode")       set -- "$@" "-m" ;;
-    "--user")           set -- "$@" "-u" ;;
-    "--output")         set -- "$@" "-o" ;;
-    *)                  set -- "$@" "${arg}"
-  esac
-done
+function long_opts_message () {
+  echo -e "bam: option --${OPTARG} does not exist, try 'bam --help' for more information"
+  exit 1
+}
+
+# echo -e \\n"Number of arguments: $NUMARGS"
+if [ $# -eq 0 ]; then
+  echo -e "bam: try 'bam --help' for more information"
+  exit 1
+fi
 
 # default variables
 format="table"
@@ -395,45 +389,104 @@ user="$(id -un)"
 scp_opt=""
 instance_opt=""
 ssh_command=""
-OPTIND=1
 
-# short opts
-optspec=":a:A:b:i:t:I:d:s:S:c:u:mo:hl"
+# long opts and short opts (hacked around getopts to get more verbose messages)
+optspec=":A:b:i:t:I:d:s:S:c:u:mo:hl-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
-    a)
-      asg_count="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
-      ;;
+    # long opts
+    -)
+      case "${OPTARG}" in
+          asg-info)
+            asg_info="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${asg_info}" "${opts}"
+            ;;
+          instance-ip)
+            ip_search="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${ip_search}" "${opts}"
+            ;;
+          instance-info)
+            instance_search="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${instance_search}" "${opts}"
+            ;;
+          s3-size)
+            bucket_search="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${bucket_search}" "${opts}"
+            ;;
+          ssh)
+            [ "${scp_mode}" ] && multi_arg_error
+            ssh_mode="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${ssh_mode}" "${opts}"
+            ;;
+          scp)
+            [ "${ssh_mode}" ] && multi_arg_error
+            scp_mode+=("${!OPTIND}")
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${scp_mode}" "${opts}"
+            ;;
+          ssh-command)
+            ssh_command="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            long_empty_args "${ssh_command}" "${opts}"
+            ;;
+          output)
+            format="${!OPTIND}"
+            ;;
+          user)
+            user="${!OPTIND}"
+            ;;
+          scp-mode)
+            scp_opt="1"
+            ;;
+          instance-state)
+            instance_opt="stopped"
+            ;;
+          instance-type)
+            instance_type="${!OPTIND}"
+            ;;
+          help)
+            echo -e "${aws_usage}"
+            exit 0
+            ;;
+          *)
+            long_opts_message
+            ;;
+      esac;;
+    # short opts
     A)
       asg_info="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     i)
       ip_search="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     I)
       instance_search="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     b)
       bucket_search="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
       [ "${scp_mode}" ] && multi_arg_error
       ssh_mode="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     S)
       [ "${ssh_mode}" ] && multi_arg_error
       scp_mode+=("${OPTARG}")
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     c)
       ssh_command="${OPTARG}"
-      empty_args "${OPTARG}" "${opts}"
+      short_empty_args "${OPTARG}" "${opts}"
       ;;
     o)
       format="${OPTARG}"
@@ -455,24 +508,13 @@ while getopts "${optspec}" opts; do
       exit 0
       ;;
     :)
-      empty_message
+      short_empty_message
       ;;
     *)
-      opts_message
+      short_opts_message
   esac
 done
 shift $(expr "${OPTIND}" - 1)
-
-# check script for args and exit if null
-if [ "${OPTIND}" -eq 1 ]; then
-  echo -e "bam: try 'bam --help' for more information"
-  exit 1
-fi
-
-# get asg instance count
-if [ "${asg_count}" ]; then
-  get_asg_instance_count $(get_asg_name $1) $(get_asg_lc_name $1)
-fi
 
 # get asg info
 if [ "${asg_info}" ]; then
@@ -509,7 +551,7 @@ if [ "${ssh_mode}" ]; then
   name_array=( $(get_instance_info "${ssh_mode}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
-  select_ssh_scp "${ssh_mode}" "${instance_type}"
+  select_ssh "${ssh_mode}" "${instance_type}"
 fi
 
 # scp mode
@@ -519,7 +561,8 @@ if [[ "${#scp_mode[@]}" -ge 2 && "${#scp_mode[@]}" -le 3 ]]; then
   name_array=( $(get_instance_info "${scp_mode[0]}" "text" "${instance_type}" | sort -n | awk '{print $4}') )
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
-  select_ssh_scp "${scp_mode[0]}" "${instance_type}" "${scp_mode[1]}" "${scp_mode[2]}"
+  select_scp "${scp_mode[0]}" "${instance_type}" "${scp_mode[1]}" "${scp_mode[2]}"
 elif [[ "${#scp_mode[@]}" -lt 2 && "${#scp_mode[@]}" -ge 1 ]]; then
-  echo "Must specify hostname search and provide <source> to SCP, try 'bam --help' for more information"
+  echo -e "Must specify hostname search and provide <source> to SCP, try 'bam --help' for more information"
+  exit 1
 fi
