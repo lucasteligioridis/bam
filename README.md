@@ -38,11 +38,13 @@ you can have a table of results that you can then SSH to:
     | 2    | instance-name   | 172.10.10.101  |
     +------+-----------------+----------------+
 
-    Enter the No. of the instance you would like to SSH or type 0 or <CTRL+C> to quit: 1
+    Enter one of the following valid options:
+    o No. - To SSH on a single instance
+    o all - To send SSH command on all listed instances
+    o 0 or 'quit' - To quit
 
-    Connecting to...
-    Host: instance-name
-    IP: 172.10.10.100
+    Enter one of the valid options: 1
+    Are you sure you want to SSH <yes/no>? yes
 
     Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
     Welcome to Ubuntu 16.04 LTS (GNU/Linux 4.4.0-24-generic x86_64)
@@ -60,8 +62,35 @@ you can have a table of results that you can then SSH to:
     Last login: Fri Feb 17 08:48:35 2017 from 172.1.1.1
     lucas044@instance-name:~$
 
-A list of instances that matched the search parameter will appear in a list, please
-select the number row that matches the instance you would like to SSH to.
+You can also send commands remotely in the same fashion as well as sending it to
+the entire list of machines, see below for an example:
+
+    > bam --ssh instance-name --ssh-command "date"
+
+    -------------------------------------------
+    |                  SSH                    |
+    +------+-----------------+----------------+
+    | No.  | Servers         | IP Address     |
+    +------+-----------------+----------------+
+    | 1    | instance-name   | 172.10.10.100  |
+    | 2    | instance-name   | 172.10.10.101  |
+    +------+-----------------+----------------+
+
+    Enter one of the following valid options:
+    o No. - To SSH to a single instance
+    o all - To send SSH command on all listed instances
+    o 0 or 'quit' - To quit
+
+    Enter one of the valid options: all
+    Are you sure you want to SSH <yes/no>? yes
+
+    Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
+    Mon Feb 20 05:22:54 UTC 2017
+    Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
+    Mon Feb 20 05:10:36 UTC 2017
+
+The `all` command will not work unless the `--ssh-command` option has been specified
+with a parameter.
 
 **SCP**
 
@@ -79,6 +108,36 @@ You can also use this function to download files remotely by appending the -m fl
     > bam --scp instance-name --scp remote_file.txt -m
     + scp lucas044@172.10.10.100:remote_file.txt .
 
+As well as SSH mode, you can upload/download to multiple servers at once. See below for an
+example:
+
+    > bam --scp instance-name --scp local_file.txt
+
+    -------------------------------------------
+    |                  SCP                    |
+    +------+-----------------+----------------+
+    | No.  | Servers         | IP Address     |
+    +------+-----------------+----------------+
+    | 1    | instance-name   | 172.10.10.100  |
+    | 2    | instance-name   | 172.10.10.101  |
+    +------+-----------------+----------------+
+
+    Enter one of the following valid options:
+    o No. - To SCP files to a single instance
+    o all - To SCP files to all listed instances
+    o 0 or 'quit' - To quit
+
+    Enter one of the valid options: all
+    Are you sure you want to SCP <yes/no>? yes
+
+    Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
+    local_file.txt                                           100%    0     0.0KB/s   00:00
+    Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
+    local_file.txt                                           100%    0     0.0KB/s   00:00
+
+You can run the above command with the --scp-mode to download files from remote servers
+locally.
+
 **INSTANCE INFO**
 
 You can get important instance information information in whatever format you specify.
@@ -92,11 +151,11 @@ will only search for currently running instances. See below for examples:
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
     |       AZ        |      InstanceId      | InstanceType  |      Name       |   PrivateIP    |    PublicIp     |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
-    |  ap-southeast-2a|  i-083216b304e95c4b1 |  r3.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
+    |  ap-southeast-2a|  i-083216b304e95c4b1 |  t2.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  r3.xlarge    |  instance-name  |  172.10.10.101 |   200.0.0.202   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-If you would like to find instances that are shutdown please append the -l flag.
+If you would like to find instances that are shutdown please append the --instance-state flag.
 
 The below command will print the output in `json` format, you can also provide `text` format.
 
@@ -114,6 +173,19 @@ The below command will print the output in `json` format, you can also provide `
             }
         ]
     ]
+
+If you would like to narrow down your search further, you can use the `--instance-type` option
+and specify the particular instance type, see below for example:
+
+    > bam --instance-info "instance-name" --instance-type "t2.xlarge"
+
+    ---------------------------------------------------------------------------------------------------------------
+    |                                             DescribeInstances                                               |
+    +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
+    |       AZ        |      InstanceId      | InstanceType  |      Name       |   PrivateIP    |    PublicIp     |
+    +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
+    |  ap-southeast-2a|  i-083216b304e95c4b1 |  t2.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
+    +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
 **S3 BUCKET**
 
@@ -157,15 +229,6 @@ info function
     ||  ap-southeast-2a    |  Healthy          |  i-007b0d6775d4ba86e      |  InService          ||
     ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
     |+---------------------+-------------------+---------------------------+---------------------+|
-
-**ASG COUNT**
-
-There is an ability to quickly retrieve the count of instances within an autoscaling group.
-This can be achieved by running the below command:
-
-    > bam --asg-count my-auto-scaling-group
-
-    2
 
 **HELP**
 

@@ -29,10 +29,6 @@ ${ORANGEU}SYNOPSIS${NC}
       the application. This was just to show how the search is really done.
 
 ${ORANGEU}OPTIONS${NC}
-      ${ORANGE}-i, --instance-ip${NC} <instance-name>
-          Show the ip addresses of the instance you search for. The private ip
-          will be shown by default.
-
       ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>]
           Provide the following information of the instance you have specified:
 
@@ -95,16 +91,6 @@ ${ORANGEU}OPTIONS${NC}
           Display help, duh....can't believe this is even required."
 
 # aws functions - the titles speak for themselves
-function get_instance_ips () {
-  local instance_name=$1
-  local format=$2
-
-  aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-code,Values=16" \
-  --query "Reservations[*].Instances[*].{Name:Tags[?Key=='Name'] | [0].Value,\
-  PrivateIP:PrivateIpAddress,PublicIP:PublicIpAddress}" --output ${format}
-}
-
 function get_instance_info () {
   local instance_name=$1
   local instance_type=$3
@@ -219,6 +205,7 @@ function are_you_sure () {
     if [[ ! "${input}" =~ ^(yes|no)$ ]]; then
       echo -e "${RED}Please only type 'yes' or 'no'${NC}"
     else
+      clear
       break
     fi
   done
