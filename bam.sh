@@ -22,11 +22,10 @@ ${ORANGEU}SYNOPSIS${NC}
       the man pages, there is so much. Hopefully this makes your life a little 
       easier.
 
-      All the following searches will add wildcards on either side of the string
-      implicitly, for example: ${ORANGE}bam --instance-info *instancename*${NC}
+      Also has a built in ssh and scp function, which is pretty cool as well.
 
-      There is no need to add the wildcard yourself this is already done within
-      the application. This was just to show how the search is really done.
+      All of the searches are done as exact searches, so please add wild cards to
+      get better search results, for example: ${ORANGE}bam --instance-info \"*instance*name*\"${NC}
 
 ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>] [--instance-state <state>]
@@ -111,7 +110,7 @@ function get_instance_info () {
   local format=$2
 
   aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_state}" \
+  --filters "Name=tag:Name,Values=${instance_name}" "Name=instance-state-name,Values=${instance_state}" \
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
@@ -392,7 +391,7 @@ ssh_command=""
 OPTIND=1
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:D:U:c:u:mo:hl-:"
+optspec=":A:b:t:I:d:s:D:U:c:u:o:hl-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
@@ -536,7 +535,6 @@ while getopts "${optspec}" opts; do
 done
 shift $(expr "${OPTIND}" - 1)
 
-echo "${OPTIND}"
 # catch all for any unusual entires
 if [ "${OPTIND}" -eq 1 ]; then
   echo -e "bam: no options specified, try 'bam --help' for more information"
