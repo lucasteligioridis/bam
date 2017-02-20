@@ -23,7 +23,7 @@ ${ORANGEU}SYNOPSIS${NC}
       easier.
 
       All the following searches will add wildcards on either side of the string
-      implicitly, for example: ${ORANGE}bam -I *instancename*${NC}
+      implicitly, for example: ${ORANGE}bam --instance-info *instancename*${NC}
 
       There is no need to add the wildcard yourself this is already done within
       the application. This was just to show how the search is really done.
@@ -33,7 +33,7 @@ ${ORANGEU}OPTIONS${NC}
           Show the ip addresses of the instance you search for. The private ip
           will be shown by default.
 
-      ${ORANGE}-I, --instance-info${NC} <instance-name> [-l]
+      ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>]
           Provide the following information of the instance you have specified:
 
             o AvailabilityZone
@@ -41,7 +41,7 @@ ${ORANGEU}OPTIONS${NC}
             o InstanceId
             o Name 
 
-          Can also provide the '-l' switch to see shutdown instances, without this
+          Can also provide the '--instance-type' switch to see shutdown instances, without this
           flag it will just show currently running instances.
 
       ${ORANGE}-t, --instance-type${NC} <instance-type>
@@ -60,29 +60,29 @@ ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${ORANGE}-s, --ssh${NC} <instance-name> [-u <username>] [-c <command>]
+      ${ORANGE}-s, --ssh${NC} <instance-name> [--user <username>] [--ssh-command <command>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
 
-          Can also provide the -u flag and provide a username, if not wanting to
-          use your machines default username.
+          Can also provide the --username flag and provide a username, if not
+          wanting to use your machines default username.
 
-          The -c flag with a parameter can also be provided to send a command to
-          the remote machine.
+          The --ssh-command flag with a parameter can also be provided to send a
+          command to the remote machine.
 
-      ${ORANGE}-S, --scp${NC} <instance-name> -S <filename> [-S <dir>] [-m] [-u <username>]
+      ${ORANGE}-S, --scp${NC} <instance-name> --scp <filename> [--scp <dir>] [--scp-mode] [--user <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to SCP files across to, please note you still need correct permissions
           and SSH keys to authorise correctly. Target will default to your home
           directory on the remote server, so only specify for other directories.
 
-          Can also append the -m flag if wanting to download from remote server
-          locally. Without flag appended it will default to uploading a file.
+          Can also append the --scp-mode flag if wanting to download from remote
+          server locally. Without flag appended it will default to uploading a file.
 
-          Can also provide the -u flag and provide a username, if not wanting to
-          use your machines default username.
+          Can also provide the --username flag and provide a username, if not
+          wanting to use your machines default username.
 
       ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
@@ -230,8 +230,8 @@ function select_ssh () {
   while true; do
     prompt="Enter one of the following valid options:
 o No. - To SSH on a single instance
-o all - To send SSH command on all listed instances (must be accompanied with -c flag)
-o 0   - To quit
+o all - To send SSH command on all listed instances
+o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
@@ -269,7 +269,7 @@ function select_scp () {
     prompt="Enter one of the following valid options:
 o No. - To SCP file on a single instance
 o all - To SCP files to all listed instances
-o 0   - To quit
+o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
