@@ -600,6 +600,7 @@ if [ "${asg_info}" ]; then
     nothing_returned_message
   else
     get_asg_info "${asg_info}" "${format}"
+    exit 0
   fi
 fi
 
@@ -609,12 +610,14 @@ if [ "${instance_search}" ]; then
     nothing_returned_message
   else
     get_instance_info "${instance_search}" "${format}" "${instance_type}"
+    exit 0
   fi
 fi
 
 # get instance info
 if [ "${bucket_search}" ]; then
   get_bucket_size "${bucket_search}" "${format}"
+  exit 0
 fi
 
 # get instance data
