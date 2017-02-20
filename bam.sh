@@ -248,8 +248,13 @@ Enter one of the valid options: "
       loop_count=${#ip_array[@]}
     fi
 
+    echo -e "\n"
     for ((i=0; i<=${loop_count}-1; i++)) do
-      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
+      echo -e "+------------------------------+"
+      printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
+      echo -e "+------------------------------+\n"
+      ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}"
+      echo -e "\n"
     done
     exit 0
   elif [[ "${input}" == "no" ]]; then
@@ -295,7 +300,11 @@ Enter one of the valid options: "
         source=${user}@${ip_array[$index+i]}:${file}
         target=${path_dir:-.}
       fi
-      scp "${source}" "${target}"
+      echo -e "+------------------------------+"
+      printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
+      echo -e "+------------------------------+\n"
+      scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${source}" "${target}"
+      echo -e "\n"
     done
     exit 0
   elif [[ "${input}" == "no" ]]; then
