@@ -225,7 +225,7 @@ Enter one of the valid options: "
 
   # set index and loop count
   index=$((num-1))
-  loop_count="${#num}"
+  loop_count="${#num[@]}"
 
   are_you_sure
 
@@ -235,13 +235,12 @@ Enter one of the valid options: "
       index=$((num))
       loop_count=${#ip_array[@]}
     fi
-    echo -e "${#BOLD}"
 
     echo -e "\n"
     for ((i=0; i<=${loop_count}-1; i++)) do
-      echo -e "+-------------------------------+"
-      printf "|  %-35s  |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
-      echo -e "+-------------------------------+\n"
+      echo -e "+-----------------------------------+"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      echo -e "+-----------------------------------+\n"
       (set -x; ssh ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
@@ -274,7 +273,7 @@ Enter one of the valid options: "
 
   # set index and loop count
   index=$((num-1))
-  loop_count="${#num}"
+  loop_count="${#num[@]}"
 
   are_you_sure
 
@@ -294,9 +293,9 @@ Enter one of the valid options: "
         target=${path_dir:-.}
       fi
 
-      echo -e "+------------------------------+"
-      printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
-      echo -e "+------------------------------+\n"
+      echo -e "+-----------------------------------+"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      echo -e "+-----------------------------------+\n"
       (set -x; scp "${source}" "${target}")
       echo -e "\n"
     done
@@ -600,7 +599,7 @@ fi
 
 # get instance data
 if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
-  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n | tr '\t' '|')
+  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n | tr '\t' '|' | tr ' ' '_')
 
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
