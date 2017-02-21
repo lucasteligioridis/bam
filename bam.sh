@@ -150,31 +150,6 @@ function get_bucket_size () {
   --output "${format}"
 }
 
-# extract data out of aws query
-function get_data () {
-  local var_name=$1
-  shift
-  local shift_by=$1
-  shift
-  for ((i=0; i<$shift_by; i++)); do
-    shift
-  done
-
-  local instances_data=($*)
-  local data
-  while [[ $# -ne 0 ]]; do
-    data+=" $1"
-    shift
-    shift
-    shift
-    shift
-    shift
-    shift
-  done
-  read -a $var_name <<< $data
-  declare -p $var_name
-}
-
 # get the longest string in array and print out length
 function element_length () {
   local array=$1
@@ -260,12 +235,13 @@ Enter one of the valid options: "
       index=$((num))
       loop_count=${#ip_array[@]}
     fi
+    echo -e "${#BOLD}"
 
     echo -e "\n"
     for ((i=0; i<=${loop_count}-1; i++)) do
-      echo -e "+------------------------------+"
-      printf "| Connecting to ${BOLD}%-${ip_len}s${NC} |\n" "${ip_array[$index+i]}"
-      echo -e "+------------------------------+\n"
+      echo -e "+-------------------------------+"
+      printf "|  %-35s  |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      echo -e "+-------------------------------+\n"
       (set -x; ssh ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
@@ -624,16 +600,15 @@ fi
 
 # get instance data
 if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
-  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n)
+  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n | tr '\t' '|')
 
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
   fi
 
-  read -a instances_data <<< $instance_info
-
-  eval $(get_data name_array 3 ${instances_data[@]})
-  eval $(get_data ip_array 4 ${instances_data[@]})
+  # store elements into an array
+  read -a ip_array <<< $(echo "${instance_info}" | cut -d '|' -f 5)
+  read -a name_array <<< $(echo "${instance_info}" | cut -d '|' -f 4)
 
   ip_len=$(element_length ${ip_array[@]})
   name_len=$(element_length ${name_array[@]})
