@@ -22,7 +22,7 @@ Installation
 Usage
 -----
 
-GENERAL
+General
 -------
 
 All searches with instances names can be completed with wildcards, see below for examples:
@@ -108,7 +108,7 @@ the entire list of machines, see below for an example:
     | Connecting to 172.10.10.100  |
     +------------------------------+
 
-    + ssh lucas044@172.10.10.100 ''
+    + ssh lucas044@172.10.10.100 date
     Warning: Permanently added '172.10.10.100' (ECDSA) to the list of known hosts.
     Mon Feb 20 05:22:54 UTC 2017
 
@@ -116,7 +116,7 @@ the entire list of machines, see below for an example:
     | Connecting to 172.10.10.101  |
     +------------------------------+
 
-    + ssh lucas044@172.10.10.101 ''
+    + ssh lucas044@172.10.10.101 date
     Warning: Permanently added '172.10.10.101' (ECDSA) to the list of known hosts.
     Mon Feb 20 05:10:36 UTC 2017
 
@@ -200,7 +200,7 @@ example:
 You can run the above command with the `--scp-download` to download files from remote servers
 locally.
 
-INSTANCE INFO
+Instance Info
 -------------
 
 You can get important instance information information in whatever format you specify.
@@ -251,7 +251,7 @@ and specify the particular instance type, see below for example:
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  t2.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-S3 BUCKET
+S3 Bucket
 ---------
 
 We can easily retrieve a bucket size and count by interrogating the cloudwatch metrics.
@@ -271,8 +271,8 @@ Using the below command will provide an output of any S3 bucket you specify:
     ||  6228552066.0 |  2017-02-15T14:50:00Z  |  Bytes ||
     |+---------------+------------------------+--------+|
 
-ASG INFO
---------
+AutoScalingGroup Info
+---------------------
 
 AutoScalingGroup information can be retireved in the similar fashion as the instance
 info function
@@ -296,7 +296,7 @@ info function
     ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
     |+---------------------+-------------------+---------------------------+---------------------+|
 
-HELP
+Help
 ----
 
 For more detailed information on each option, please use the following command:
