@@ -296,6 +296,13 @@ info function
     ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
     |+---------------------+-------------------+---------------------------+---------------------+|
 
+Todo
+----
+
+- Add in a parallel option, so commands can be run across multiple instances at once.
+- Add in ssh timeout option and then output to terminal which servers failed to connect.
+- Netcat test prior to ssh/scp and error out
+
 Help
 ----
 
