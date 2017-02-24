@@ -7,7 +7,7 @@ ORANGEU='\033[1;4;31m'
 ORANGE='\033[1;31m'
 NC='\033[0m'
 BOLD='\033[1m'
-
+ssh_default="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 # Help message
 aws_usage="
 ${ORANGEU}NAME${NC}
@@ -241,7 +241,7 @@ Enter one of the valid options: "
       echo -e "+-----------------------------------+"
       printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set -x; ssh ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
+      (set -x; ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
 
@@ -296,7 +296,7 @@ Enter one of the valid options: "
       echo -e "+-----------------------------------+"
       printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set -x; scp "${source}" "${target}")
+      (set -x; scp ${ssh_default} "${source}" "${target}")
       echo -e "\n"
     done
 
