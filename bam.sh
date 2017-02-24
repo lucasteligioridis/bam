@@ -599,7 +599,7 @@ fi
 
 # get instance data
 if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
-  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -n | tr '\t' '|' | tr ' ' '_')
+  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -k4 | tr '\t' '|' | tr ' ' '_')
 
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
