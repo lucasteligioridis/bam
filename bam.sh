@@ -439,6 +439,17 @@ instance_type="*"
 user="$(id -un)"
 instance_state="running"
 OPTIND=1
+scp_download=""
+scp_upload=""
+ssh_check=""
+asg_info=""
+instance_search=""
+bucket_search=""
+ssh_mode=""
+ssh_command=""
+scp_mode=""
+scp_instance=""
+scp_dir=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
 optspec=":A:b:t:I:d:s:D:d:U:c:u:o:hlp:-:"
