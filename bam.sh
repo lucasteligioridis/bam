@@ -1,5 +1,44 @@
 #!/bin/bash
 
+set -eu
+
+# setup traceback on error and exit
+_showed_traceback=f
+
+traceback() {
+  # Hide the traceback() call.
+  local -i start=$(( ${1:-0} + 1 ))
+  local -i end=${#BASH_SOURCE[@]}
+  local -i i=0
+  local -i j=0
+
+  echo "Traceback (last called is first):" 1>&2
+  for ((i=${start}; i < ${end}; i++)); do
+    j=$(( $i - 1 ))
+    local function="${FUNCNAME[$i]}"
+    local file="${BASH_SOURCE[$i]}"
+    local line="${BASH_LINENO[$j]}"
+    echo "     ${function}() in ${file}:${line}" 1>&2
+  done
+}
+
+on_error() {
+  local _ec="$?"
+  local _cmd="${BASH_COMMAND:-unknown}"
+  traceback 1
+  _showed_traceback=t
+  echo "The command ${_cmd} exited with exit code ${_ec}." 1>&2
+}
+trap on_error ERR
+
+on_exit() {
+  local _ec="$?"
+  if [[ $_ec != 0 && "${_showed_traceback}" != t ]]; then
+    traceback 1
+  fi
+}
+trap on_exit EXIT
+
 # Global vars
 RED='\033[0;31m'
 ORANGE='\033[1;31m'
@@ -8,6 +47,7 @@ ORANGE='\033[1;31m'
 NC='\033[0m'
 BOLD='\033[1m'
 ssh_default="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
 # Help message
 aws_usage="
 ${ORANGEU}NAME${NC}
@@ -224,8 +264,10 @@ Enter one of the valid options: "
   done
 
   # set index and loop count
+  set +u
   index=$((num-1))
   loop_count="${#num[@]}"
+  set -u
 
   are_you_sure
 
@@ -272,8 +314,10 @@ Enter one of the valid options: "
   done
 
   # set index and loop count
+  set +u
   index=$((num-1))
   loop_count="${#num[@]}"
+  set -u
 
   are_you_sure
 
@@ -336,16 +380,20 @@ function short_empty_args () {
   local arg=$1
   local opt=$2
 
+  set +e
   [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
   && { short_empty_message "${opt}" >&2; exit 1; }
+  set -e
 }
 
 function long_empty_args () {
   local arg=$1
   local opt=$2
 
-  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == --* ]] \
+  set +e
+  [[ "${arg}" =~ ^[[:space:]]*$ || "${arg}" == --* ]] \
   && { long_empty_message "${opt}" >&2; exit 1; }
+  set -e
 }
 
 # error messages
