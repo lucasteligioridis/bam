@@ -474,8 +474,7 @@ while getopts "${optspec}" opts; do
             long_empty_args "${bucket_search}" "${opts}"
             ;;
           ssh)
-            [ "${scp_download}" ] && invalid_opts_error
-            [ "${scp_upload}" ] && invalid_opts_error
+            [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
             ssh_check="1"
             ssh_mode="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
@@ -487,8 +486,7 @@ while getopts "${optspec}" opts; do
             long_empty_args "${ssh_params}" "${opts}"
             ;;
           scp-upload)
-            [ "${ssh_check}" ] && invalid_opts_error
-            [ "${scp_download}" ] && invalid_opts_error
+            [[ "${ssh_check}" || "${scp_download}" ]] && invalid_opts_error
             scp_upload="1"
             scp_instance=$2
             scp_file=$3
@@ -497,8 +495,7 @@ while getopts "${optspec}" opts; do
             shift
             ;;
           scp-download)
-            [ "${ssh_check}" ] && invalid_opts_error
-            [ "${scp_upload}" ] && invalid_opts_error
+            [[ "${ssh_check}" || "${scp_upload}" ]] && invalid_opts_error
             scp_download="1"
             scp_instance=$2
             scp_file=$3
@@ -560,8 +557,7 @@ while getopts "${optspec}" opts; do
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
-      [ "${scp_download}" ] && invalid_opts_error
-      [ "${scp_upload}" ] && invalid_opts_error
+      [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
       ssh_check="1"
       ssh_mode="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
@@ -571,8 +567,7 @@ while getopts "${optspec}" opts; do
       short_empty_args "${ssh_params}" "${opts}"
       ;;
     U)
-      [ "${ssh_check}" ] && invalid_opts_error
-      [ "${scp_download}" ] && invalid_opts_error
+      [[ "${ssh_check}" || "${scp_download}" ]] && invalid_opts_error
       scp_upload="1"
       scp_instance=$2
       scp_file=$3
@@ -580,8 +575,7 @@ while getopts "${optspec}" opts; do
       shift
       ;;
     D)
-      [ "${ssh_check}" ] && invalid_opts_error
-      [ "${scp_upload}" ] && invalid_opts_error
+      [[ "${ssh_check}" || "${scp_upload}" ]] && invalid_opts_error
       scp_download="1"
       scp_instance=$2
       scp_file=$3
