@@ -5,7 +5,7 @@ set -eu
 # setup traceback on error and exit
 _showed_traceback=f
 
-traceback() {
+function traceback() {
   # Hide the traceback() call.
   local -i start=$(( ${1:-0} + 1 ))
   local -i end=${#BASH_SOURCE[@]}
@@ -13,7 +13,7 @@ traceback() {
   local -i j=0
 
   echo "Traceback (last called is first):" 1>&2
-  for ((i=${start}; i < ${end}; i++)); do
+  for ((i=${start}; i<${end}; i++)); do
     j=$(( $i - 1 ))
     local function="${FUNCNAME[$i]}"
     local file="${BASH_SOURCE[$i]}"
@@ -22,7 +22,7 @@ traceback() {
   done
 }
 
-on_error() {
+function on_error() {
   local _ec="$?"
   local _cmd="${BASH_COMMAND:-unknown}"
   traceback 1
@@ -31,7 +31,7 @@ on_error() {
 }
 trap on_error ERR
 
-on_exit() {
+function on_exit() {
   local _ec="$?"
   if [[ $_ec != 0 && "${_showed_traceback}" != t ]]; then
     traceback 1
