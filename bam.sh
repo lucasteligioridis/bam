@@ -462,7 +462,7 @@ while getopts "${optspec}" opts; do
             format="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             ;;
-          user)
+          username)
             user="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             ;;
