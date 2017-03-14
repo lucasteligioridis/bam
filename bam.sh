@@ -63,7 +63,7 @@ ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-b, --s3-size${NC} <bucket-name>
           Retrieve the bucket size of specified bucket name.
 
-      ${ORANGE}-s, --ssh${NC} <instance-name> [--user <username>] [--ssh-command <command>] [--ssh-params <parameters>]
+      ${ORANGE}-s, --ssh${NC} <instance-name> [--username <username>] [--ssh-command <command>] [--ssh-params <parameters>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           SSH to.
@@ -77,7 +77,7 @@ ${ORANGEU}OPTIONS${NC}
           ${ORANGE}--ssh-params${NC} can be added for any custom ssh options you
           would like to parse in as well. By default this is set to nothing.
 
-      ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [--scp-dir <dir>] [--user <username>]
+      ${ORANGE}-U, --scp-upload${NC} <instance-name> <filename> [--scp-dir <dir>] [--username <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to upload files to, please note you still need correct permissions
@@ -86,7 +86,7 @@ ${ORANGEU}OPTIONS${NC}
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
-      ${ORANGE}-D, --scp-download${NC} <instance-name> <filename> [--scp-dir <dir>] [--user <username>]
+      ${ORANGE}-D, --scp-download${NC} <instance-name> <filename> [--scp-dir <dir>] [--username <username>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
           to download files from, please note you still need correct permissions
