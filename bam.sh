@@ -16,15 +16,11 @@ ${ORANGEU}NAME${NC}
 ${ORANGEU}SYNOPSIS${NC}
         bam [options...] <parameters>
 
-      Use the bam command so you dont have to remember all the stupid aws 
-      cli parameters to get basic information about instances and go through all
-      the man pages, there is so much. Hopefully this makes your life a little 
-      easier.
+      Use the bam command so you dont have to remember all the complex aws
+      cli parameters and switches. Also has a built in ssh and scp function.
 
-      Also has a built in ssh and scp function, which is pretty cool as well.
-
-      All of the searches are done as exact searches, so please add wild cards to
-      get better search results, for example: ${ORANGE}bam --instance-info \"*instance*name*\"${NC}
+      All of the searches are done as wild card searches, so please search like the below to
+      get better search results, for example: ${ORANGE}bam --instance-info \"instance*name\"${NC}
 
 ${ORANGEU}OPTIONS${NC}
       ${ORANGE}-I, --instance-info${NC} <instance-name> [--instance-type <instance-type>] [--instance-state <state>]
@@ -103,7 +99,7 @@ ${ORANGEU}OPTIONS${NC}
             o table
 
       ${ORANGE}-h, --help${NC}
-          Display help, duh....can't believe this is even required."
+          Display help."
 
 # aws functions - the titles speak for themselves
 function get_instance_info () {
