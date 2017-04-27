@@ -25,7 +25,7 @@ Usage
 General
 -------
 
-All searches with instances names can be completed with wildcards, see below for examples:
+All searches with instance names can be completed with wildcards, see below for examples:
 
     > bam --ssh "*instance-name*"
 
@@ -37,8 +37,9 @@ have to use quotes, I would recommend this approach regardless.
 SSH
 ---
 
-You have the ability to SSH to the machines on AWS, by providing a search term by instance name
-you can have a table of results that you can then SSH to:
+You have the ability to SSH to any instance on AWS. By providing a search on instance name
+you can have a table of results that will output to the terminal which will then give
+you the option to ssh to. See below for an example:
 
     > bam --ssh instance-name
 
@@ -203,7 +204,7 @@ locally.
 Instance Info
 -------------
 
-You can get important instance information information in whatever format you specify.
+You can get important instance information in whatever format you specify.
 By default the format is in `table`, you can change the format by using the  `--output`
 option. See below for examples:
 

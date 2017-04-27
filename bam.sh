@@ -1,5 +1,44 @@
 #!/bin/bash
 
+set -eu
+
+# setup traceback on error and exit
+_showed_traceback=f
+
+function traceback() {
+  # Hide the traceback() call.
+  local -i start=$(( ${1:-0} + 1 ))
+  local -i end=${#BASH_SOURCE[@]}
+  local -i i=0
+  local -i j=0
+
+  echo "Traceback (last called is first):" 1>&2
+  for ((i=${start}; i<${end}; i++)); do
+    j=$(( $i - 1 ))
+    local function="${FUNCNAME[$i]}"
+    local file="${BASH_SOURCE[$i]}"
+    local line="${BASH_LINENO[$j]}"
+    echo "     ${function}() in ${file}:${line}" 1>&2
+  done
+}
+
+function on_error() {
+  local _ec="$?"
+  local _cmd="${BASH_COMMAND:-unknown}"
+  traceback 1
+  _showed_traceback=t
+  echo "The command ${_cmd} exited with exit code ${_ec}." 1>&2
+}
+trap on_error ERR
+
+function on_exit() {
+  local _ec="$?"
+  if [[ $_ec != 0 && "${_showed_traceback}" != t ]]; then
+    traceback 1
+  fi
+}
+trap on_exit EXIT
+
 # Global vars
 RED='\033[0;31m'
 ORANGE='\033[1;31m'
@@ -8,6 +47,7 @@ ORANGE='\033[1;31m'
 NC='\033[0m'
 BOLD='\033[1m'
 ssh_default="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+
 # Help message
 aws_usage="
 ${ORANGEU}NAME${NC}
@@ -220,8 +260,10 @@ Enter one of the valid options: "
   done
 
   # set index and loop count
+  set +u
   index=$((num-1))
   loop_count="${#num[@]}"
+  set -u
 
   are_you_sure
 
@@ -268,8 +310,10 @@ Enter one of the valid options: "
   done
 
   # set index and loop count
+  set +u
   index=$((num-1))
   loop_count="${#num[@]}"
+  set -u
 
   are_you_sure
 
@@ -332,16 +376,20 @@ function short_empty_args () {
   local arg=$1
   local opt=$2
 
+  set +e
   [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == -* ]] \
   && { short_empty_message "${opt}" >&2; exit 1; }
+  set -e
 }
 
 function long_empty_args () {
   local arg=$1
   local opt=$2
 
-  [[ -z "${arg}" || "${arg}" =~ ^[[:space:]]*$ || "${arg}" == --* ]] \
+  set +e
+  [[ "${arg}" =~ ^[[:space:]]*$ || "${arg}" == --* ]] \
   && { long_empty_message "${opt}" >&2; exit 1; }
+  set -e
 }
 
 # error messages
@@ -387,6 +435,17 @@ instance_type="*"
 user="$(id -un)"
 instance_state="running"
 OPTIND=1
+scp_download=""
+scp_upload=""
+ssh_check=""
+asg_info=""
+instance_search=""
+bucket_search=""
+ssh_mode=""
+ssh_command=""
+scp_mode=""
+scp_instance=""
+scp_dir=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
 optspec=":A:b:t:I:d:s:D:d:U:c:u:o:hlp:-:"
@@ -411,8 +470,7 @@ while getopts "${optspec}" opts; do
             long_empty_args "${bucket_search}" "${opts}"
             ;;
           ssh)
-            [ "${scp_download}" ] && invalid_opts_error
-            [ "${scp_upload}" ] && invalid_opts_error
+            [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
             ssh_check="1"
             ssh_mode="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
@@ -424,8 +482,7 @@ while getopts "${optspec}" opts; do
             long_empty_args "${ssh_params}" "${opts}"
             ;;
           scp-upload)
-            [ "${ssh_check}" ] && invalid_opts_error
-            [ "${scp_download}" ] && invalid_opts_error
+            [[ "${ssh_check}" || "${scp_download}" ]] && invalid_opts_error
             scp_upload="1"
             scp_instance=$2
             scp_file=$3
@@ -434,8 +491,7 @@ while getopts "${optspec}" opts; do
             shift
             ;;
           scp-download)
-            [ "${ssh_check}" ] && invalid_opts_error
-            [ "${scp_upload}" ] && invalid_opts_error
+            [[ "${ssh_check}" || "${scp_upload}" ]] && invalid_opts_error
             scp_download="1"
             scp_instance=$2
             scp_file=$3
@@ -497,8 +553,7 @@ while getopts "${optspec}" opts; do
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
-      [ "${scp_download}" ] && invalid_opts_error
-      [ "${scp_upload}" ] && invalid_opts_error
+      [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
       ssh_check="1"
       ssh_mode="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
@@ -508,8 +563,7 @@ while getopts "${optspec}" opts; do
       short_empty_args "${ssh_params}" "${opts}"
       ;;
     U)
-      [ "${ssh_check}" ] && invalid_opts_error
-      [ "${scp_download}" ] && invalid_opts_error
+      [[ "${ssh_check}" || "${scp_download}" ]] && invalid_opts_error
       scp_upload="1"
       scp_instance=$2
       scp_file=$3
@@ -517,8 +571,7 @@ while getopts "${optspec}" opts; do
       shift
       ;;
     D)
-      [ "${ssh_check}" ] && invalid_opts_error
-      [ "${scp_upload}" ] && invalid_opts_error
+      [[ "${ssh_check}" || "${scp_upload}" ]] && invalid_opts_error
       scp_download="1"
       scp_instance=$2
       scp_file=$3
