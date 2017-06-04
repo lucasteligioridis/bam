@@ -279,7 +279,7 @@ Enter one of the valid options: "
       echo -e "+-----------------------------------+"
       printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set -x; ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
+      (set +e -x;ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
 
@@ -336,7 +336,7 @@ Enter one of the valid options: "
       echo -e "+-----------------------------------+"
       printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set -x; scp ${ssh_default} "${source}" "${target}")
+      (set +e -x; scp ${ssh_default} "${source}" "${target}")
       echo -e "\n"
     done
 
