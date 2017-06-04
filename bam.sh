@@ -270,7 +270,7 @@ Enter one of the valid options: "
   if [[ "${input}" == "yes" ]]; then
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" && "${ssh_command}" ]]; then
-      index=$((num))
+      index=0
       loop_count=${#ip_array[@]}
     fi
 
@@ -320,7 +320,7 @@ Enter one of the valid options: "
   if [[ "${input}" == "yes" ]]; then
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" ]]; then
-      index=$((num))
+      index=0
       loop_count=${#ip_array[@]}
     fi
 
