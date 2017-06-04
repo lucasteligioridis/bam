@@ -359,13 +359,13 @@ function valid_result () {
     exit 0
   elif ! [ "${ssh_command}" ] && [[ "${ssh_mode}" && "${choice}" == "all" ]]; then
     echo -e "${RED}You cannot select 'all' without an accompanied --ssh-command${NC}\n"
-    return 1
+    return 0
   elif [[ "${choice}" == "all" ]]; then
     break
   elif ! [ "${choice}" -eq "${choice}" ] 2>/dev/null || \
       [[ "${choice}" -gt "${max}"|| -z "${choice}" || "${choice}" =~ ^[[:space:]]*$ ]]; then
     echo -e "${RED}Please only select from available options!${NC}\n"
-    return 1
+    return 0
   else
     break
   fi
