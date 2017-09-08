@@ -1,7 +1,6 @@
 bam
 ====
-Because the AWS console is a clunky piece of crap, the aws cli has way too much documentation
-and I'm lazy.
+Primarily an SSH tool to gather a list of instances across all your selected regions.
 
 Prerequisites
 -------------
@@ -33,6 +32,8 @@ All searches with instance names can be completed with wildcards, see below for 
 
 Depending on where you place the wildcard and what system you are running, you may
 have to use quotes, I would recommend this approach regardless.
+
+When first installing via `make install` you will be prompted to enter your default regions. These must be set for the tool to work without any extra arguments, otherwise please use the `--region` flag. This will overwrite your default configuration.
 
 SSH
 ---
@@ -252,56 +253,10 @@ and specify the particular instance type, see below for example:
     |  ap-southeast-2a|  i-083216b304e95c4b1 |  t2.xlarge    |  instance-name  |  172.10.10.100 |   200.0.0.201   |
     +-----------------+----------------------+---------------+-----------------+----------------+-----------------+
 
-S3 Bucket
----------
-
-We can easily retrieve a bucket size and count by interrogating the cloudwatch metrics.
-Using the below command will provide an output of any S3 bucket you specify:
-
-    > bam --s3-size bucket-name
-
-    -----------------------------------------------------
-    |                GetMetricStatistics                |
-    +---------------+-----------------------------------+
-    |  Label        |  BucketSizeBytes                  |
-    +---------------+-----------------------------------+
-    ||                   Datapoints                    ||
-    |+---------------+------------------------+--------+|
-    ||      Sum      |       Timestamp        | Unit   ||
-    |+---------------+------------------------+--------+|
-    ||  6228552066.0 |  2017-02-15T14:50:00Z  |  Bytes ||
-    |+---------------+------------------------+--------+|
-
-AutoScalingGroup Info
----------------------
-
-AutoScalingGroup information can be retireved in the similar fashion as the instance
-info function
-
-    > bam --asg-info my-auto-scaling-group
-
-    -----------------------------------------------------------------------------------------------
-    |                                  DescribeAutoScalingGroups                                  |
-    +--------------------------+------------------------------------------------------------------+
-    |  AutoScalingGroupName    |  my-auto-scaling-group                                           |
-    |  DesiredCapacity         |  2                                                               |
-    |  LaunchConfigurationName |  launch-configuration                                            |
-    |  MaxSize                 |  16                                                              |
-    |  MinSize                 |  2                                                               |
-    +--------------------------+------------------------------------------------------------------+
-    ||                                         Instances                                         ||
-    |+---------------------+-------------------+---------------------------+---------------------+|
-    ||         AZ          |   HealthStatus    |            ID             |   LifeCycleState    ||
-    |+---------------------+-------------------+---------------------------+---------------------+|
-    ||  ap-southeast-2a    |  Healthy          |  i-007b0d6775d4ba86e      |  InService          ||
-    ||  ap-southeast-2b    |  Healthy          |  i-05e60270bef39dce1      |  InService          ||
-    |+---------------------+-------------------+---------------------------+---------------------+|
-
 Todo
 ----
 
 - Add in a parallel option, so commands can be run across multiple instances at once.
-- Add in ssh timeout option and then output to terminal which servers failed to connect.
 - Netcat test prior to ssh/scp and error out
 
 Help
