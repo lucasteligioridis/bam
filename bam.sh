@@ -120,6 +120,9 @@ ${ORANGEU}OPTIONS${NC}
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
+      ${ORANGE}-r, --region${NC} <region>
+          Setting a manual region to overwrite your ${HOME}/.bam.conf region list.
+
       ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
 
@@ -165,19 +168,19 @@ function create_menu () {
   # create table
   pretty_title
   pretty_line
-  printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
+  printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} | ${BOLD}%-${az_len}s${NC} |\n" "No." "Instances" "IP Address" "AZ"
   pretty_line
 
   # print out instance information
-  for ((i=1; i<=${#name_array[@]}; i++)); do
-      printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
+  for ((i=1; i<=${#instance_names[@]}; i++)); do
+      printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} | ${BOLD}%-${az_len}s${NC} |\n" "$i" "${instance_names[$i-1]}" "${ips[$i-1]}" "${availability_zone[$i-1]}"
   done
   pretty_line
   printf "\n"
 }
 
 function pretty_title () {
-  total_len=$((${name_len}+${ip_len}+14))
+  total_len=$((${name_len}+${ip_len}+${az_len}+17))
   first_pos=$(((${total_len}/2)-1))
   last_pos=$(((${total_len}-${first_pos})-1))
   for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
@@ -188,7 +191,8 @@ function pretty_line () {
   printf "+"
   for ((i=1; i<=6; i++)); do printf "-"; done && printf "+";
   for ((i=1; i<=$((${name_len}+2)); i++)); do printf "-"; done && printf "+"
-  for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+\n"
+  for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+"
+  for ((i=1; i<=$((${az_len}+2)); i++)); do printf "-"; done && printf "+\n"
 }
 
 function are_you_sure () {
@@ -390,6 +394,8 @@ fi
 
 # default variables
 format="table"
+region=""
+region_list=($(<${HOME}/.bam.conf))
 instance_type="*"
 user="$(id -un)"
 instance_state="running"
@@ -456,6 +462,11 @@ while getopts "${optspec}" opts; do
             ssh_command="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${ssh_command}" "${opts}"
+            ;;
+          region)
+            unset region_list
+            region_list="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
             ;;
           output)
             format="${!OPTIND}"
@@ -529,6 +540,10 @@ while getopts "${optspec}" opts; do
     o)
       format="${OPTARG}"
       ;;
+    r)
+      unset region_list
+      region_list="${OPTARG}"
+      ;;
     u)
       user="${OPTARG}"
       ;;
@@ -559,46 +574,43 @@ if [ "${OPTIND}" -eq 1 ]; then
   exit 1
 fi
 
-# get asg info
-if [ "${asg_info}" ]; then
-  if [ $(get_asg_info "${asg_info}" "${format}" | wc -l) -le 2 ]; then
-    nothing_returned_message
-  else
-    get_asg_info "${asg_info}" "${format}"
-    exit 0
-  fi
+# check if no region has been set
+set +u
+if [ -z "${region_list}" ]; then
+  no_region
 fi
+set -u
 
 # get instance info
 if [ "${instance_search}" ]; then
-  if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
-    nothing_returned_message
-  else
-    get_instance_info "${instance_search}" "${format}" "${instance_type}"
-    exit 0
-  fi
-fi
-
-# get instance info
-if [ "${bucket_search}" ]; then
-  get_bucket_size "${bucket_search}" "${format}"
+  echo -e "\n"
+  for region in "${region_list[@]}"; do
+    echo -e "${BOLD}Results for ${ORANGE}${region}${NC} ${BOLD}below:${NC}\n"
+    get_instance_info "${instance_search}" "${format}" "${instance_type}" "${region}"
+    echo -e "\n"
+  done
   exit 0
 fi
 
 # get instance data
 if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
-  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -k4 | tr '\t' '|' | tr ' ' '_')
+  for region in "${region_list[@]}"; do
+    instance_info+=($(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" "${region}" | sort -k4 | tr '\t' '|' | tr ' ' '_'))
+  done
 
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
   fi
 
   # store elements into an array
-  read -a ip_array <<< $(echo "${instance_info}" | cut -d '|' -f 5)
-  read -a name_array <<< $(echo "${instance_info}" | cut -d '|' -f 4)
+  ips=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 5))
+  instance_names=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 4))
+  availability_zone=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 1))
 
-  ip_len=$(element_length ${ip_array[@]})
-  name_len=$(element_length ${name_array[@]})
+  ip_len=$(element_length ${ips[@]})
+  name_len=$(element_length ${instance_names[@]})
+  az_len=$(element_length ${availability_zone[@]})
+  az_len=$((az_len+1))
 fi
 
 # ssh mode
