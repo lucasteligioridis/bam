@@ -88,17 +88,6 @@ ${ORANGEU}OPTIONS${NC}
             o stopping
             o * (to search all instance states)
 
-      ${ORANGE}-A, --asg-info${NC} <asg-name>
-          Provide the following information of an auto-scaling group:
-
-            o AvailabilityZone
-            o HealthStatus
-            o InstanceId
-            o State
-
-      ${ORANGE}-b, --s3-size${NC} <bucket-name>
-          Retrieve the bucket size of specified bucket name.
-
       ${ORANGE}-s, --ssh${NC} <instance-name> [--username <username>] [--ssh-command <command>] [--ssh-params <parameters>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
@@ -131,6 +120,9 @@ ${ORANGEU}OPTIONS${NC}
           Can also provide the ${ORANGE}--username${NC} flag and provide a username, if not
           wanting to use your machines default username.
 
+      ${ORANGE}-r, --region${NC} <region>
+          Setting a manual region to overwrite your ${HOME}/.bam.conf region list.
+
       ${ORANGE}-o, --output${NC} <style>
           Formatting style for output:
 
@@ -146,44 +138,14 @@ function get_instance_info () {
   local instance_name=$1
   local instance_type=$3
   local format=$2
+  local region=$4
 
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_state}" \
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
-  --output "${format}"
-}
-
-function get_asg_name () {
-  local asg_name=$1
-
-  aws autoscaling describe-auto-scaling-groups --query \
-  "AutoScalingGroups[].{ASG:AutoScalingGroupName}" --output text | grep -i "${asg_name}"
-}
-
-function get_asg_info () {
-  local asg_name=$1
-  local format=$2
-
-  aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-name "$(get_asg_name ${asg_name})" \
-  --query "AutoScalingGroups[].{AutoScalingGroupName:AutoScalingGroupName,MinSize:MinSize,\
-  MaxSize:MaxSize,DesiredCapacity:DesiredCapacity,LaunchConfigurationName:LaunchConfigurationName,\
-  Instances:Instances[*].{InstanceId:InstanceId,HealthStatus:HealthStatus,State:LifecycleState,\
-  AZ:AvailabilityZone}}" --output "${format}"
-}
-
-function get_bucket_size () {
-  local bucket_name=$1
-  local format=$2
-
-  now=$(date +%s)
-  aws cloudwatch get-metric-statistics --namespace "AWS/S3" \
-  --start-time "$(echo "${now} - 86400" | bc)" --end-time "${now}" \
-  --metric-name BucketSizeBytes --period 86400 --statistics Sum --unit Bytes \
-  --dimensions Name=BucketName,Value=${bucket_name} Name=StorageType,Value=StandardStorage \
-  --output "${format}"
+  --output "${format}" --region "${region}"
 }
 
 # get the longest string in array and print out length
@@ -206,19 +168,19 @@ function create_menu () {
   # create table
   pretty_title
   pretty_line
-  printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "No." "Servers" "IP Address"
+  printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} | ${BOLD}%-${az_len}s${NC} |\n" "No." "Instances" "IP Address" "AZ"
   pretty_line
 
   # print out instance information
-  for ((i=1; i<=${#name_array[@]}; i++)); do
-      printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} |\n" "$i" "${name_array[$i-1]}" "${ip_array[$i-1]}"
+  for ((i=1; i<=${#instance_names[@]}; i++)); do
+      printf "| ${BOLD}%-5s${NC}| ${BOLD}%-${name_len}s${NC} | ${BOLD}%-${ip_len}s${NC} | ${BOLD}%-${az_len}s${NC} |\n" "$i" "${instance_names[$i-1]}" "${ips[$i-1]}" "${availability_zone[$i-1]}"
   done
   pretty_line
   printf "\n"
 }
 
 function pretty_title () {
-  total_len=$((${name_len}+${ip_len}+14))
+  total_len=$((${name_len}+${ip_len}+${az_len}+17))
   first_pos=$(((${total_len}/2)-1))
   last_pos=$(((${total_len}-${first_pos})-1))
   for ((i=1; i<=$((${total_len})); i++)); do printf "-"; done && printf "\n"
@@ -229,7 +191,8 @@ function pretty_line () {
   printf "+"
   for ((i=1; i<=6; i++)); do printf "-"; done && printf "+";
   for ((i=1; i<=$((${name_len}+2)); i++)); do printf "-"; done && printf "+"
-  for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+\n"
+  for ((i=1; i<=$((${ip_len}+2)); i++)); do printf "-"; done && printf "+"
+  for ((i=1; i<=$((${az_len}+2)); i++)); do printf "-"; done && printf "+\n"
 }
 
 function are_you_sure () {
@@ -256,7 +219,7 @@ o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
-    valid_result "${num}" "${#name_array[@]}"
+    valid_result "${num}" "${#instance_names[@]}"
   done
 
   # set index and loop count
@@ -271,15 +234,15 @@ Enter one of the valid options: "
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" && "${ssh_command}" ]]; then
       index=0
-      loop_count=${#ip_array[@]}
+      loop_count=${#ips[@]}
     fi
 
     echo -e "\n"
     for ((i=0; i<=${loop_count}-1; i++)) do
       echo -e "+-----------------------------------+"
-      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ips[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set +e -x;ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
+      (set +e -x;ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ips[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
 
@@ -306,7 +269,7 @@ o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
-    valid_result "${num}" "${#name_array[@]}"
+    valid_result "${num}" "${#instance_names[@]}"
   done
 
   # set index and loop count
@@ -321,20 +284,20 @@ Enter one of the valid options: "
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" ]]; then
       index=0
-      loop_count=${#ip_array[@]}
+      loop_count=${#ips[@]}
     fi
 
     for ((i=0; i<=${loop_count}-1; i++)) do
       source=${file}
-      target=${user}@${ip_array[$index+i]}:${path_dir:-}
+      target=${user}@${ips[$index+i]}:${path_dir:-}
 
       if [ "${scp_download}" ]; then
-        source=${user}@${ip_array[$index+i]}:${file}
+        source=${user}@${ips[$index+i]}:${file}
         target=${path_dir:-.}
       fi
 
       echo -e "+-----------------------------------+"
-      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ips[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
       (set +e -x; scp ${ssh_default} "${source}" "${target}")
       echo -e "\n"
@@ -398,6 +361,11 @@ function nothing_returned_message () {
   exit 1
 }
 
+function no_region () {
+  echo -e "${RED}bam: No region has been set!\nPlease run "make install" and set default region or use --region flag to set on command${NC}"
+  exit 1
+}
+
 function short_empty_message () {
   echo -e "bam: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
   exit 1
@@ -431,6 +399,8 @@ fi
 
 # default variables
 format="table"
+region=""
+region_list=($(<${HOME}/.bam.conf))
 instance_type="*"
 user="$(id -un)"
 instance_state="running"
@@ -438,9 +408,7 @@ OPTIND=1
 scp_download=""
 scp_upload=""
 ssh_check=""
-asg_info=""
 instance_search=""
-bucket_search=""
 ssh_mode=""
 ssh_command=""
 scp_mode=""
@@ -448,26 +416,16 @@ scp_instance=""
 scp_dir=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:D:d:U:c:u:o:hlp:-:"
+optspec=":r:t:I:d:s:D:d:U:c:u:o:hlp:-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
     -)
       case "${OPTARG}" in
-          asg-info)
-            asg_info="${!OPTIND}"
-            OPTIND=$(($OPTIND+1))
-            long_empty_args "${asg_info}" "${opts}"
-            ;;
           instance-info)
             instance_search="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${instance_search}" "${opts}"
-            ;;
-          s3-size)
-            bucket_search="${!OPTIND}"
-            OPTIND=$(($OPTIND+1))
-            long_empty_args "${bucket_search}" "${opts}"
             ;;
           ssh)
             [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
@@ -510,6 +468,11 @@ while getopts "${optspec}" opts; do
             OPTIND=$(($OPTIND+1))
             long_empty_args "${ssh_command}" "${opts}"
             ;;
+          region)
+            unset region_list
+            region_list="${!OPTIND}"
+            OPTIND=$(($OPTIND+1))
+            ;;
           output)
             format="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
@@ -540,16 +503,8 @@ while getopts "${optspec}" opts; do
             ;;
       esac;;
     # short opts
-    A)
-      asg_info="${OPTARG}"
-      short_empty_args "${OPTARG}" "${opts}"
-      ;;
     I)
       instance_search="${OPTARG}"
-      short_empty_args "${OPTARG}" "${opts}"
-      ;;
-    b)
-      bucket_search="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
@@ -590,6 +545,10 @@ while getopts "${optspec}" opts; do
     o)
       format="${OPTARG}"
       ;;
+    r)
+      unset region_list
+      region_list="${OPTARG}"
+      ;;
     u)
       user="${OPTARG}"
       ;;
@@ -620,46 +579,43 @@ if [ "${OPTIND}" -eq 1 ]; then
   exit 1
 fi
 
-# get asg info
-if [ "${asg_info}" ]; then
-  if [ $(get_asg_info "${asg_info}" "${format}" | wc -l) -le 2 ]; then
-    nothing_returned_message
-  else
-    get_asg_info "${asg_info}" "${format}"
-    exit 0
-  fi
+# check if no region has been set
+set +u
+if [ -z "${region_list}" ]; then
+  no_region
 fi
+set -u
 
 # get instance info
 if [ "${instance_search}" ]; then
-  if [ $(get_instance_info "${instance_search}" "${format}" "${instance_type}" | wc -l) -le 2 ]; then
-    nothing_returned_message
-  else
-    get_instance_info "${instance_search}" "${format}" "${instance_type}"
-    exit 0
-  fi
-fi
-
-# get instance info
-if [ "${bucket_search}" ]; then
-  get_bucket_size "${bucket_search}" "${format}"
+  echo -e "\n"
+  for region in "${region_list[@]}"; do
+    echo -e "${BOLD}Results for ${ORANGE}${region}${NC} ${BOLD}below:${NC}\n"
+    get_instance_info "${instance_search}" "${format}" "${instance_type}" "${region}"
+    echo -e "\n"
+  done
   exit 0
 fi
 
 # get instance data
 if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
-  instance_info=$(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" | sort -k4 | tr '\t' '|' | tr ' ' '_')
+  for region in "${region_list[@]}"; do
+    instance_info+=($(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" "${region}" | sort -k4 | tr '\t' '|' | tr ' ' '_'))
+  done
 
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
   fi
 
   # store elements into an array
-  read -a ip_array <<< $(echo "${instance_info}" | cut -d '|' -f 5)
-  read -a name_array <<< $(echo "${instance_info}" | cut -d '|' -f 4)
+  ips=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 5))
+  instance_names=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 4))
+  availability_zone=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 1))
 
-  ip_len=$(element_length ${ip_array[@]})
-  name_len=$(element_length ${name_array[@]})
+  ip_len=$(element_length ${ips[@]})
+  name_len=$(element_length ${instance_names[@]})
+  az_len=$(element_length ${availability_zone[@]})
+  az_len=$((az_len+1))
 fi
 
 # ssh mode
