@@ -361,6 +361,11 @@ function nothing_returned_message () {
   exit 1
 }
 
+function no_region () {
+  echo -e "${RED}bam: No region has been set!\nPlease run "make install" and set default region or use --region flag to set on command${NC}"
+  exit 1
+}
+
 function short_empty_message () {
   echo -e "bam: option -${1:-$OPTARG} requires parameter, try 'bam --help' for more information"
   exit 1
