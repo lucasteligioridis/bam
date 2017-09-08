@@ -219,7 +219,7 @@ o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
-    valid_result "${num}" "${#name_array[@]}"
+    valid_result "${num}" "${#instance_names[@]}"
   done
 
   # set index and loop count
@@ -234,15 +234,15 @@ Enter one of the valid options: "
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" && "${ssh_command}" ]]; then
       index=0
-      loop_count=${#ip_array[@]}
+      loop_count=${#ips[@]}
     fi
 
     echo -e "\n"
     for ((i=0; i<=${loop_count}-1; i++)) do
       echo -e "+-----------------------------------+"
-      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ips[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
-      (set +e -x;ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ip_array[$index+i]}" "${ssh_command:-}")
+      (set +e -x;ssh ${ssh_default} ${ssh_params:-} "${user}"@"${ips[$index+i]}" "${ssh_command:-}")
       echo -e "\n"
     done
 
@@ -269,7 +269,7 @@ o 0 or 'quit' - To quit
 
 Enter one of the valid options: "
     read -rp "${prompt}" num
-    valid_result "${num}" "${#name_array[@]}"
+    valid_result "${num}" "${#instance_names[@]}"
   done
 
   # set index and loop count
@@ -284,20 +284,20 @@ Enter one of the valid options: "
     # if all is selected, index and loop count need to be re-evaluated
     if [[ "${num}" == "all" ]]; then
       index=0
-      loop_count=${#ip_array[@]}
+      loop_count=${#ips[@]}
     fi
 
     for ((i=0; i<=${loop_count}-1; i++)) do
       source=${file}
-      target=${user}@${ip_array[$index+i]}:${path_dir:-}
+      target=${user}@${ips[$index+i]}:${path_dir:-}
 
       if [ "${scp_download}" ]; then
-        source=${user}@${ip_array[$index+i]}:${file}
+        source=${user}@${ips[$index+i]}:${file}
         target=${path_dir:-.}
       fi
 
       echo -e "+-----------------------------------+"
-      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ip_array[$index+i]}$(echo -e ${NC})"
+      printf "|    %-35s    |\n" "Connecting to $(echo -e ${BOLD})${ips[$index+i]}$(echo -e ${NC})"
       echo -e "+-----------------------------------+\n"
       (set +e -x; scp ${ssh_default} "${source}" "${target}")
       echo -e "\n"
