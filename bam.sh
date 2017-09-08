@@ -88,17 +88,6 @@ ${ORANGEU}OPTIONS${NC}
             o stopping
             o * (to search all instance states)
 
-      ${ORANGE}-A, --asg-info${NC} <asg-name>
-          Provide the following information of an auto-scaling group:
-
-            o AvailabilityZone
-            o HealthStatus
-            o InstanceId
-            o State
-
-      ${ORANGE}-b, --s3-size${NC} <bucket-name>
-          Retrieve the bucket size of specified bucket name.
-
       ${ORANGE}-s, --ssh${NC} <instance-name> [--username <username>] [--ssh-command <command>] [--ssh-params <parameters>]
           Provide a list of options that are returned from the instance name
           searched. You then select the number of the instance you would like to
@@ -146,44 +135,14 @@ function get_instance_info () {
   local instance_name=$1
   local instance_type=$3
   local format=$2
+  local region=$4
 
   aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=*${instance_name}*" "Name=instance-state-name,Values=${instance_state}" \
   "Name=instance-type,Values=${instance_type}" --query "Reservations[*].Instances[*]\
   .{Name:Tags[?Key=='Name'] | [0].Value, InstanceId: InstanceId, PrivateIP: PrivateIpAddress, \
   PublicIp: PublicIpAddress, InstanceType:InstanceType, AZ: Placement.AvailabilityZone}" \
-  --output "${format}"
-}
-
-function get_asg_name () {
-  local asg_name=$1
-
-  aws autoscaling describe-auto-scaling-groups --query \
-  "AutoScalingGroups[].{ASG:AutoScalingGroupName}" --output text | grep -i "${asg_name}"
-}
-
-function get_asg_info () {
-  local asg_name=$1
-  local format=$2
-
-  aws autoscaling describe-auto-scaling-groups \
-  --auto-scaling-group-name "$(get_asg_name ${asg_name})" \
-  --query "AutoScalingGroups[].{AutoScalingGroupName:AutoScalingGroupName,MinSize:MinSize,\
-  MaxSize:MaxSize,DesiredCapacity:DesiredCapacity,LaunchConfigurationName:LaunchConfigurationName,\
-  Instances:Instances[*].{InstanceId:InstanceId,HealthStatus:HealthStatus,State:LifecycleState,\
-  AZ:AvailabilityZone}}" --output "${format}"
-}
-
-function get_bucket_size () {
-  local bucket_name=$1
-  local format=$2
-
-  now=$(date +%s)
-  aws cloudwatch get-metric-statistics --namespace "AWS/S3" \
-  --start-time "$(echo "${now} - 86400" | bc)" --end-time "${now}" \
-  --metric-name BucketSizeBytes --period 86400 --statistics Sum --unit Bytes \
-  --dimensions Name=BucketName,Value=${bucket_name} Name=StorageType,Value=StandardStorage \
-  --output "${format}"
+  --output "${format}" --region "${region}"
 }
 
 # get the longest string in array and print out length
@@ -438,9 +397,7 @@ OPTIND=1
 scp_download=""
 scp_upload=""
 ssh_check=""
-asg_info=""
 instance_search=""
-bucket_search=""
 ssh_mode=""
 ssh_command=""
 scp_mode=""
@@ -448,26 +405,16 @@ scp_instance=""
 scp_dir=""
 
 # long opts and short opts (hacked around getopts to get more verbose messages)
-optspec=":A:b:t:I:d:s:D:d:U:c:u:o:hlp:-:"
+optspec=":r:t:I:d:s:D:d:U:c:u:o:hlp:-:"
 while getopts "${optspec}" opts; do
   case "${opts}" in
     # long opts
     -)
       case "${OPTARG}" in
-          asg-info)
-            asg_info="${!OPTIND}"
-            OPTIND=$(($OPTIND+1))
-            long_empty_args "${asg_info}" "${opts}"
-            ;;
           instance-info)
             instance_search="${!OPTIND}"
             OPTIND=$(($OPTIND+1))
             long_empty_args "${instance_search}" "${opts}"
-            ;;
-          s3-size)
-            bucket_search="${!OPTIND}"
-            OPTIND=$(($OPTIND+1))
-            long_empty_args "${bucket_search}" "${opts}"
             ;;
           ssh)
             [[ "${scp_download}" || "${scp_upload}" ]] && invalid_opts_error
@@ -540,16 +487,8 @@ while getopts "${optspec}" opts; do
             ;;
       esac;;
     # short opts
-    A)
-      asg_info="${OPTARG}"
-      short_empty_args "${OPTARG}" "${opts}"
-      ;;
     I)
       instance_search="${OPTARG}"
-      short_empty_args "${OPTARG}" "${opts}"
-      ;;
-    b)
-      bucket_search="${OPTARG}"
       short_empty_args "${OPTARG}" "${opts}"
       ;;
     s)
