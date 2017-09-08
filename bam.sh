@@ -603,9 +603,11 @@ if [[ "${ssh_mode}" || "${scp_instance}" ]]; then
     instance_info+=($(get_instance_info "${ssh_mode:-${scp_instance}}" "text" "${instance_type}" "${region}" | sort -k4 | tr '\t' '|' | tr ' ' '_'))
   done
 
+  set +u
   if [ -z "${instance_info}" ]; then
     nothing_returned_message
   fi
+  set -u
 
   # store elements into an array
   ips=($(echo "${instance_info[@]}" | tr ' ' '\n' | cut -d '|' -f 5))
