@@ -20,17 +20,17 @@ Installation
 Usage
 -----
 
-# print a list of servers matching this name
-am server-name
+    # print a list of servers matching this name
+    am server-name
 
-# run a command on a bunch of servers that match this name eg
-am webservers ps -ef
+    # run a command on a bunch of servers that match this name eg
+    am webservers ps -ef
 
-# remember to escape pipes and ampersands etc if you want them to run remotely
-am webservers ps -ef \| grep apache
+    # remember to escape pipes and ampersands etc if you want them to run remotely
+    am webservers ps -ef \| grep apache
 
-# run privileged commands too using sudo - only type sudo password once, even though multiple hosts!
-am workers sudo docker ps
+    # run privileged commands too using sudo - only type sudo password once, even though multiple hosts!
+    am workers sudo docker ps
 
-# run a shell
-am some-host bash
+    # run a shell
+    am some-host bash
