@@ -34,3 +34,6 @@ Usage
 
     # run a shell
     am some-host bash
+
+    # do random stuff to each server
+    for i in $(am cluster | awk '{ print $3 }'); do ping -c1 $i; done
