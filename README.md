@@ -35,5 +35,5 @@ Usage
     # run a shell
     am some-host bash
 
-    # do random stuff to each server
-    for i in $(am cluster | awk '{ print $3 }'); do ping -c1 $i; done
+    # print out list of IP addresses of servers when output not going to terminal
+    for i in $(am cluster); do ping -c1 $i; done

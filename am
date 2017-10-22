@@ -44,5 +44,10 @@ if [ ${#} -gt 1 ]; then
     [ ${fail} != 0 ] && echo "Exited: $fail"
   done
 else
-  echo $results | jq -r '.[] | [.name, .id, .ip, .az, .type] | join(" ")' | sort | column -t
+  if [ -t 1 ]; then
+    echo ${results} | jq -r '.[] | [.name, .id, .ip, .az, .type] | join(" ")' | sort | column -t
+  else
+    results=$(echo ${results} | jq -r '.[] | .ip')
+    echo ${results} # no newlines please
+  fi
 fi
