@@ -1,3 +1,11 @@
+Archived
+====
+This repository is now officially archived. It hasn't been used in quite some time, originally
+this was meant to make my life easier when SSH'ing to various instances on AWS, since then there
+are plenty of better alternatives, also probably wouldn't use bash either :P
+
+This was good fun at the time, but time to put it to rest.
+
 bam
 ====
 Primarily an SSH tool to gather a list of instances across all your selected regions.
